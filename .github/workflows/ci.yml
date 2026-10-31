@@ -1,0 +1,50 @@
+name: MINEFALL CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Install server dependency
+        run: npm install --no-audit --no-fund
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check engine.js
+          node --check cosmetics.js
+          node --check online-client.js
+          node --check server/index.js
+          node --check server/room-manager.js
+          node --check scripts/check-inline-js.js
+          node --check scripts/audit-static-assets.js
+          node --check scripts/smoke-server.js
+
+      - name: Check inline browser scripts
+        run: node scripts/check-inline-js.js
+
+      - name: Audit catalog assets
+        run: node scripts/audit-static-assets.js
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Smoke-test HTTP and WebSocket server
+        run: npm run smoke

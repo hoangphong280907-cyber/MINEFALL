@@ -1,0 +1,22 @@
+MINEFALL Phase 0.9C.6 — Automated Verification Report
+Date: 2026-10-28
+
+AUTOMATED TESTS
+- Command: npm test
+- Result: 56 tests passed, 0 failed.
+- Coverage includes: cosmetic catalogue and Vietnam flag, arena number palettes, host-authoritative bomb/arena settings, room membership and host authority, reconnect seat retention, results-leave behavior, rematch votes, board-size consistency, engine rules/scoring, and skin asset pipeline fallbacks.
+
+STATIC / SYNTAX CHECKS
+- node --check passed for online-client.js, engine.js, cosmetics.js, server/index.js, server/room-manager.js.
+- Extracted inline JavaScript from index.html and node --check passed.
+- HTML scan: 113 IDs, 113 unique, no duplicate IDs.
+- Public art files present: 10 flag SVGs and 10 bomb SVGs.
+- Character PNG sprites: 0 included by default. This is intentional; generated PNGs can be placed at assets/skins/<catalog-skin-id>.png. Until a skin file is added, the game falls back to its CSS pawn.
+- ZIP archive was validated and the test suite was rerun from an extracted copy.
+
+MANUAL / END-TO-END LIMITATION
+- Two-browser WebSocket smoke testing was not completed in the current environment. Automated tests and static checks are not a substitute for a real multi-client match. Before v1.0, verify creation/join, host transfer/rejoin, board/cosmetic agreement, elimination and end reveal, leaving results, and rematch in two browser sessions.
+
+KNOWN ASSET IMPORT CONTRACT
+- Skin files: 512x512 transparent PNG, one whole character, match camera/framing in CHARACTER_SKIN_ART_SPEC.md.
+- Existing catalog IDs: skin-classic, skin-gold, skin-violet, skin-crimson, skin-mint.

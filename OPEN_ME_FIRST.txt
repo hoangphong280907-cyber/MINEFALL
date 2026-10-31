@@ -1,0 +1,20 @@
+MINEFALL 1.0.0-rc.2 — BROWSER MULTIPLAYER RELEASE CANDIDATE
+
+Run locally (Node.js 20+, recommended Node.js 22):
+  npm install
+  npm test
+  npm run smoke
+  npm start
+
+Open http://localhost:3000
+
+For public browser play without a Cloudflare Tunnel, see DEPLOYMENT_GUIDE.md.
+The intended architecture is GitHub for source + Render Web Service for the Node.js HTTP/WebSocket app. GitHub Pages alone cannot run the multiplayer server.
+
+Release state: Release Candidate. Complete VERSION_1.0_RELEASE_GATES.md before declaring v1.0 final.
+
+Before the first GitHub commit on a machine with Internet access:
+  npm install
+  npm test
+  npm run smoke
+Keep the generated package-lock.json in the repository. Review `git status` before committing; never upload `.env`, tokens, or `node_modules`.

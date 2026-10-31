@@ -1,0 +1,33 @@
+MINEFALL Phase 0.9C.3 — Verification Report
+Date: 2026-10-27
+
+1. Automated regression tests
+- Command: node --test
+- Result: 44 tests passed, 0 failed.
+- Coverage includes engine rules, safe opening generation, flag scoring for all participants, bot spawn count, room capacity/state, host arena authority, equipped cosmetics, stable reconnect seat/color, rematch votes, server-authoritative turns, and consistent map configuration.
+
+2. JavaScript syntax
+- node --check engine.js: PASS
+- node --check online-client.js: PASS
+- node --check server/index.js: PASS
+- node --check server/room-manager.js: PASS
+- Extracted inline script from index.html + node --check: PASS
+
+3. HTML structure
+- HTML IDs scanned: 109
+- Duplicate IDs: 0
+- Required screens found: homeScreen, onlineScreen, onlineRoomScreen, gameScreen
+- Dedicated room screen is a separate top-level screen from the setup page: PASS
+- Key setup / connection / game-state timeout code present: PASS (static inspection)
+
+4. Reliability/UI changes included
+- Room create/join success transitions to the dedicated room screen.
+- Reduced long explanatory copy in setup and match HUD.
+- Room create/join requests have a 9-second response timeout; initial WebSocket connection has an 8-second timeout.
+- Game command watchdog requests fresh state and clears a stuck pending action if no authoritative response arrives.
+- Visual snapshots are signature-checked; unchanged clock snapshots update timers only rather than rebuilding the board/pawns/players.
+- Redundant render pass removed. Client/server buffered message queues are guarded.
+
+5. Limitations
+- Live navigation from a headless browser was blocked by the execution environment with ERR_BLOCKED_BY_ADMINISTRATOR, even for a local/mock-served page.
+- Consequently, a real multi-browser WebSocket smoke test and visual review must still be performed on the host machine after `npm install`. The 44 passing tests and static syntax/HTML checks do not replace that manual network test.

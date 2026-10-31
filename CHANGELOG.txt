@@ -1,0 +1,118 @@
+[1.0.0-rc.2 — offline landing pod positioning correction]
+- Fixed the remaining offline landing-pod visor defect: `.pod-window` is now a sibling of `.pod-shell`, matching online markup. Its `left:36px; top:14px` coordinates are therefore resolved against `.drop-animation`, not against the hull itself.
+- Updated the regression test to reject nested visor markup and require the shared positioning container.
+- Bumped the package version to `1.0.0-rc.2` so this corrected build is distinguishable from the earlier RC1 archives.
+- Verification: 65/65 automated tests, inline script syntax check, and static asset audit passed. `npm install` could not reach the npm registry in this environment; server smoke test remains pending on a connected machine/CI runner.
+
+[1.0.0-rc.1 follow-up: dynamic landing board dimensions]
+- Offline landing intro derives the displayed board size from the generated board cell count and mine total from generated cells, rather than relying on the default 16×16 UI value.
+- Online landing intro continues to display the authoritative board size from the server snapshot.
+- Added regression coverage; automated suite is now 65/65.
+
+- Fixed offline landing-pod DOM hierarchy: the engine plume is now a sibling behind the hull, matching the already-correct online intro structure. This prevents the flame from using the hull as its positioning origin and drawing over/away from the capsule.
+- Clarified the distinction between full board dimensions and the small landing cluster in offline and online landing messages. The game header now says “Bàn cờ” rather than implying the whole board is the landing zone.
+
+[1.0.0-rc.1 — GitHub source + public Node/WebSocket deployment prep]
+- Added `render.yaml` to deploy the existing Node HTTP/WebSocket app from a GitHub repository without a per-session Cloudflare Tunnel.
+- Added GitHub Actions CI to check syntax, inline browser scripts, catalogue assets, unit tests, HTTP assets and the WebSocket handshake.
+- Added `npm run smoke`, which starts a temporary local server and verifies `/health`, core static routes, and the WebSocket greeting.
+- Updated package metadata to `1.0.0-rc.1`, exposed that version via health/hello responses, and refreshed deployment documentation.
+- Corrected stale test-count documentation. Unit suite after the release-preparation edits is 65/65; this environment could not download `ws` from npm (`EAI_AGAIN`), so the new server smoke test remains unexecuted here.
+- Release status remains RC until the hosted CI passes and real two-browser / phone testing satisfies `VERSION_1.0_RELEASE_GATES.md`.
+
+[0.9C.9 landing-intro visual fix]
+- Re-anchored the landing pod's engine plume to the bottom of the capsule rather than the bottom of the tall animation wrapper.
+- Added layered hull/window/plume stacking, a tapered cyan thruster trail, and a soft ground glow aligned to the plume's landing point.
+- Applied the shared landing visual to both offline and online intro overlays; reduced-motion preferences disable the plume/glow animations.
+- Added a regression test for the landing pod geometry and animation rules.
+
+
+[0.9C.9 stability/mobile patch]
+- Online match snapshots now merge the server-provided room configuration before the game timer and duration badge are rendered.
+- Added a current-cell clue label that reports adjacent mines only for cells already revealed to the player.
+- Enlarged mobile action controls and added the target coordinate to reduce mis-taps.
+- Coalesced rapid authoritative match-state broadcasts into a 20 ms per-room window to reduce redundant work on mobile clients.
+- Raised the per-connection message ceiling to tolerate fast touch input while retaining flood protection.
+- Disabled transient movement/death/callout visuals on coarse-pointer devices to reduce visual churn.
+- Automated tests: 63 passed, 0 failed; live multi-device testing remains required.
+MINEFALL Phase 0.9C.5 — Cosmetic Store and v1.0 Release Gates
+- Increased placed flag visual size to improve readability, with responsive clamping for smaller board cells.
+- Added shared cosmetics.js catalog used by browser and server: 12 arenas with eight number colors, 10 flags including Vietnam, 10 bombs/explosion palettes, 10 elimination effects, 10 movement trails and 11 victory celebrations.
+- Expanded shop tabs; previews can show arena number palettes; profile migration supplies default owned/equipped items for new categories without erasing existing wallet/items.
+- Carried per-player flag/bomb/elimination/trail/celebration loadout into room and match snapshots.
+- Added server static-file allowlist entry for cosmetics.js and catalogue + online-loadout regression tests.
+- Added VERSION_1.0_RELEASE_GATES.md with necessary and sufficient acceptance gates.
+- Verification: 53/53 automated tests pass; inline/browser JavaScript syntax checks pass; 115 HTML IDs, no duplicates. Browser/WebSocket end-to-end was not verified in this environment.
+
+MINEFALL Phase 0.9C.3 — Dedicated Room UI and Stability
+
+## 0.9C.3 — Current release
+- Moved the room panel to a separate `onlineRoomScreen`; create/join returns a dedicated room page rather than inserting a room panel below the setup page.
+- Simplified the online setup, waiting-room, landing intro, and global HUD copy so only key labels and statuses remain visible.
+- Avoided re-rendering the entire shared board on every one-second server clock snapshot. Visual state is re-rendered only when board/player/action state changes; the clock tick updates the timer displays only.
+- Removed a redundant second pass through board, pawn, player and action rendering on every authoritative snapshot.
+- Added a bounded request wait for room create/join and a command watchdog that requests fresh state and unlocks a stale action if server confirmation never arrives.
+- Added client message send guards for disconnected sockets or large client-side buffers. The server skips replaceable clock/cursor snapshots for slow clients and closes connections only if a socket queue becomes excessively large.
+- Shop navigation returns to the screen from which it was opened, including the online waiting room.
+- Updated package metadata, server health/version labels and release documentation.
+- Verification: 44/44 existing regression tests pass; JavaScript syntax checks pass; HTML ID scan reports no duplicates.
+
+## 0.9C.2 — Gameplay consistency
+- Standard flag duel blocks unflagging another player's flag; Chaos remains a future mode.
+- Added two-player rematch voting and new-match setup sequence.
+- Unified server map size, host arena and per-player cosmetic loadout.
+- Preserved the player's seat/color when reconnecting in the same browser session.
+- Maintained the random connected safe opening and all-participant flag scoring.
+
+## 0.9C.1 — Shared offline renderer
+- Online matches use the native offline board, pawn renderer, action HUD, movement feedback, explosion, timed end reveal/crown/confetti and results overlay.
+- Avoided rebuilding board tiles when no visible board state changed.
+
+## 0.9C.0 — Server-authoritative gameplay slice
+- Added online MOVE, DIG, FLAG and UNFLAG, server-side turn validation, timers, eliminations, end conditions and scoring.
+
+
+MINEFALL Phase 0.9C.4 — 2026-10-27
+- Removed mine-density percentages from difficulty selectors and help label; difficulty remains Dễ / Trung bình / Khó. Underlying mine densities unchanged.
+- Synchronized offline and online board-size/difficulty selectors to prevent 20×20 silently falling back to online default 16×16.
+- Online pregame now waits for a matching authoritative server board and validates size + cell count before landing/roulette.
+- Landing preview explicitly labels full board dimensions separately from its landing-cluster thumbnail.
+- Added board-size matrix and UI configuration regression tests.
+
+
+MINEFALL Phase 0.9C.6 — Host cosmetics, room authority and sprite pipeline
+- Notification messages auto-dismiss; a successful room update clears stale error text.
+- Removed BOARD/MINES tags from the main menu header.
+- Board flags use the actual catalog SVG flag assets; revealed static mines use the classic bomb SVG; explosions use host-selected bomb skin and effect palette.
+- Host-created room stores the equipped bomb skin as authoritative alongside arena; it survives host transfer. Former host rejoining cannot start the room unless they remain the current host.
+- Player skins can load transparent PNG sprites from assets/skins/<skin-id>.png with CSS pawn fallback. Added CHARACTER_SKIN_ART_SPEC.md and assets/skins/README.md.
+- Movement trails last about 1.48 seconds, render behind the movement direction, and disappear when their owner is eliminated. Tombstone effect stays through the results sequence.
+- Leaving from results returns remaining players to the lobby and preserves the room configuration.
+- Added regression tests for host-selected bomb visuals, results departure, role authority and visual asset wiring.
+
+
+MINEFALL Phase 0.9C.7 — Equipped bomb sprite consistency
+- Fixed renderCell using bomb-standard for revealed, non-exploded mines even when another bomb skin was equipped.
+- The same active skin now controls both revealed mine sprites and explosion visuals. Offline uses the local equipped bomb; online uses the host-authoritative room bomb.
+- Added regression assertions to prevent the revealed-mine renderer from reverting to the classic sprite.
+
+
+PHASE 0.9C.7 — BOMB SKIN VISIBILITY & DISTINCT EXPLOSION EFFECTS
+- Increased revealed mine sprite size and added skin-specific silhouette/glow styling.
+- Added safe emoji fallback if a bomb SVG asset fails to load.
+- Rebuilt explosion burst with a shockwave, flare, effect-specific particles and signature layers for standard, fire, ice, toxic, lightning, void, pixel, cosmic, confetti and plasma bombs.
+- Online matches continue to use the host-selected bomb skin; offline matches use the locally equipped bomb skin.
+- Gameplay rules and scoring are unchanged.
+
+
+MINEFALL Phase 0.9C.8 — Configurable Match Duration
+- Added offline and online setup options: 10, 15, 20, 25 or 30 minutes; default remains 10 minutes.
+- Server validates the duration, includes it in public room config, and uses it for authoritative online match deadlines and rematches.
+- Updated timer progress, duration badges, pregame room labels and timeout result titles to display the selected duration.
+- Added regression tests for all supported values, invalid values, UI options and a 30-minute authoritative timeout.
+
+
+MINEFALL Phase 0.9C.9 — Online Room UI & Connection Guidance
+- Hide the topbar coin balance and Shop button while the online waiting room or online match is active; restore them automatically after leaving the online session.
+- Added regression coverage for room/match header visibility state.
+- Expanded README instructions for same-device, same-LAN and public Internet multiplayer; clarified that localhost and sandbox ZIP links are not public game URLs.

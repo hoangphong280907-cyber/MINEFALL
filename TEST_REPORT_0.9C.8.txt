@@ -1,0 +1,27 @@
+MINEFALL PHASE 0.9C.8 — TEST REPORT
+====================================
+Feature: configurable match duration
+
+Implemented:
+- Offline configuration offers exactly 10, 15, 20, 25 and 30 minutes.
+- Online room creation offers the same five options and stores the selected value in the authoritative room config.
+- Online server deadline, countdown, room label, pregame summary, HUD badge, progress bar, timeout title and rematch timer honor the selected duration.
+- Default duration remains 10 minutes for existing clients/configurations that omit the new field.
+- Server rejects unsupported durations, including values below 10 minutes or above 30 minutes.
+
+Automated verification:
+- `node --test`: 59 passed, 0 failed.
+- `node --check engine.js`: passed.
+- `node --check cosmetics.js`: passed.
+- `node --check online-client.js`: passed.
+- `node --check server/index.js`: passed.
+- `node --check server/room-manager.js`: passed.
+- Extracted inline JavaScript from index.html and `node --check`: passed.
+- HTML IDs: 124, no duplicates.
+- Regression test simulates a 30-minute authoritative server match reaching timeout at 1,800 seconds.
+
+Not verified in this environment:
+- Live browser-to-browser WebSocket smoke test. `node_modules` / the `ws` dependency is not installed in this workspace. Run `npm install`, `npm test`, and `npm start`, then test a 30-minute room in two browsers.
+
+Package verification:
+- ZIP root contains `package.json`, `index.html`, `server/`, `assets/` and `tests/` directly; no extra wrapper directory.

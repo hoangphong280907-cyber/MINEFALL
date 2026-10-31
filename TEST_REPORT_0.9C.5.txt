@@ -1,0 +1,26 @@
+MINEFALL Phase 0.9C.5 — Cosmetic Store & v1.0 Release Gates
+
+AUTOMATED TESTS
+- Result: 53 passed, 0 failed, 0 skipped.
+- Command: npm test (node --test).
+- Coverage includes engine/map/scoring/turns, online room/match state, cosmetic catalogue counts, Vietnam flag, eight number colors per arena, cosmetic allowlists and loadout propagation, visual hook integration, and historical 0.9C regressions.
+
+COSMETIC CATALOGUE COUNTS
+- Arenas: 12; every arena has 8 number colors.
+- Character skins: 5.
+- Avatars: 6.
+- Placeable flags: 10, including 🇻🇳 Vietnam flag (unlocked by default).
+- Bomb / explosion cosmetics: 10.
+- Elimination effects: 10.
+- Movement trails: 10.
+- Victory celebrations: 11.
+
+STATIC VALIDATION
+- node --check passed for cosmetics.js, engine.js, online-client.js, server/index.js, server/room-manager.js, every tests/*.js file, and the extracted inline JavaScript from index.html.
+- HTML id scan: 115 IDs, 0 duplicates.
+- Server static route allowlists cosmetics.js.
+- ZIP structure checked, then tests re-run from a freshly extracted package.
+
+LIMITATIONS
+- A live browser/WebSocket end-to-end session was not run in this environment. Automated tests and syntax/static checks do not prove every visual effect has been manually observed in a browser.
+- Profile coins, ownership, and equipment remain stored in localStorage on the current browser. This release does not implement accounts or cloud saves.

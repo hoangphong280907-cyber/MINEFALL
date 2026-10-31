@@ -1,0 +1,27 @@
+MINEFALL Phase 0.9C.9 — Test Report
+
+Automated tests
+- Command: `node --test`
+- Result after stability/mobile + landing-intro visual patches: 64 passed, 0 failed.
+- Added regression checks for online configuration synchronization, current-cell clue visibility, mobile action target labeling, and coalesced match-state broadcasts, and landing-pod engine plume alignment in the offline and online intro overlays.
+- Added a readable current-cell clue label so the pawn no longer hides the only indication of a revealed cell number.
+- Increased mobile action button size and displayed the selected target coordinate.
+- Match snapshots now refresh the client from the server-provided room config before updating the timer UI.
+- Rapid state broadcasts are coalesced over a 20 ms window per room; authoritative command validation and state application remain server-side.
+- Reduced transient movement/death/callout visuals on coarse-pointer devices to reduce mobile rendering load.
+- Updated the health and WebSocket phase label to 0.9C.9.
+- Existing engine, scoring, duration, cosmetics, room authority and protocol tests remain passing.
+
+Syntax checks
+- `node --check online-client.js` passed.
+- `node --check engine.js`, `node --check cosmetics.js`, `node --check server/index.js`, and `node --check server/room-manager.js` passed.
+- Inline JavaScript blocks in `index.html` were extracted and syntax-checked.
+
+Packaging
+- `package.json` and `index.html` are at the archive root.
+- ZIP extraction test is performed separately after packaging.
+
+Multiplayer caveat
+- This environment did not perform a live two-device network smoke test or a physical-phone performance test. To use two devices locally, keep the server running and access it via the server computer's LAN IPv4 address. For players on different networks, deploy the HTTP and WebSocket server to a public host or configure a secure public endpoint.
+
+Follow-up v1.0.0-rc.1 patch: aligned the offline thruster with the capsule. A later RC2 review found the visor still nested under the hull despite using container-relative coordinates; RC2 fixes that remaining visual defect by making the hull, visor and plume siblings.

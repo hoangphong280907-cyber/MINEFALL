@@ -1,0 +1,16 @@
+MINEFALL PHASE 0.9C.7 — TEST REPORT
+
+Scope
+- Equipped mine sprite consistency (offline loadout / online host-authoritative skin).
+- Larger mine artwork, flagged-mine reveal rendering and image-load fallback.
+- Distinct explosion silhouettes and signature layers for all 10 bomb types.
+- No gameplay, scoring or turn-rule changes.
+
+Automated checks
+- Node test suite: 57 passed, 0 failed.
+- JavaScript syntax: engine.js, cosmetics.js, online-client.js, server/index.js, server/room-manager.js and all inline scripts in index.html passed `node --check`.
+- Every bomb catalog asset exists in assets/mines/.
+- ZIP root checked after extraction; package.json is at the top level.
+
+Limitation
+- No real browser/WebSocket multiplayer smoke test was run in this environment because the `ws` dependency is not installed in the build environment and browser access is restricted. Run `npm install`, then `npm test` and `npm start` locally before release.
