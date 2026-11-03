@@ -112,3 +112,18 @@ test('landing pod engine plume stays attached to the capsule in offline and onli
   assert.match(onlineCss, /\.online-drop-animation\{margin-top:18px;animation:dropPodLand/);
   assert.match(onlineCss, /\.online-drop-animation \.pod-flame,\.overlay\.online-intro-overlay \.drop-shadow\{animation:none!important\}/);
 });
+
+test('character sprites scale from the selected board cell and animate the visible PNG layer', () => {
+  const pawnRule = html.match(/\.pawn\{[^}]*\}/)?.[0] || '';
+  assert.match(pawnRule, /width:var\(--pawn-cell-size,3\.6%\)/);
+  assert.match(pawnRule, /height:var\(--pawn-cell-size,3\.6%\)/);
+  assert.doesNotMatch(pawnRule, /max-width:25px|max-height:25px/);
+  assert.ok(html.includes("pawn.style.setProperty('--pawn-cell-size',(76/SIZE)+'%')"));
+  assert.ok(html.includes('const crowdOffsetPercent=1/SIZE'));
+  assert.match(html, /\.pawn\.has-sprite:not\(\.moving\):not\(\.dead\) \.pawn-sprite\{animation:pawnSpriteIdle/);
+  assert.match(html, /\.pawn\.has-sprite\.moving \.pawn-sprite\{animation:pawnSpriteMove/);
+  assert.match(html, /\.pawn\.has-sprite\.dead \.pawn-sprite\{animation:pawnDeath/);
+  assert.match(html, /@keyframes pawnSpriteIdle/);
+  assert.match(html, /@keyframes pawnSpriteMove/);
+  assert.match(html, /@media\(prefers-reduced-motion:reduce\)/);
+});
