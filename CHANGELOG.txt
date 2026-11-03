@@ -1,3 +1,10 @@
+[RC3 preview — dynamic character scale and lightweight animation]
+- Character sprite frame now scales to 76% of the selected board cell instead of a board-relative 3.6% capped at 25px. This removes the tiny-sprite effect across supported board sizes.
+- Updated crowd offsets to scale with cell size so nearby pawns remain inside their cell bounds.
+- Added a subtle idle float, a short movement bounce/tilt, and reused the existing death animation for the visible PNG sprite layer.
+- All motion continues to respect the existing `prefers-reduced-motion` rules. No gameplay, coordinates, hitbox, or WebSocket protocol changes.
+- Verification in the RC3 preview workspace: 66/66 automated tests passed; inline-script syntax check and static-asset audit passed. Browser visual testing and server smoke test still need confirmation on the connected local machine.
+
 [1.0.0-rc.2 — offline landing pod positioning correction]
 - Fixed the remaining offline landing-pod visor defect: `.pod-window` is now a sibling of `.pod-shell`, matching online markup. Its `left:36px; top:14px` coordinates are therefore resolved against `.drop-animation`, not against the hull itself.
 - Updated the regression test to reject nested visor markup and require the shared positioning container.
