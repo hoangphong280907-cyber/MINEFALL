@@ -672,6 +672,7 @@ class RoomManager {
       player.disconnectDeadline = null;
       player.disconnectExpired = true;
       this._invalidateResumeToken(player);
+      room.seatAssignments.delete(player.identityKey);
 
       const state = room.matchState;
       if (room.status === 'playing' && state && !state.ended && state.started) {
