@@ -19,6 +19,7 @@ const MATCH_DURATIONS = Object.freeze([10, 15, 20, 25, 30]);
 const DEFAULT_MATCH_DURATION_MINUTES = 10;
 const MATCH_SECONDS = DEFAULT_MATCH_DURATION_MINUTES * 60;
 const TURN_SECONDS = 60;
+const DISCONNECT_GRACE_MS = 30_000;
 const SKIP_PENALTY = 5;
 const PLACE_POINTS = Object.freeze({ 1: 200, 2: 150, 3: 75, 4: 38, 5: 19 });
 
@@ -68,11 +69,14 @@ function makeCode(existing) {
 }
 
 class RoomManager {
-  constructor({ now = () => Date.now(), rng = Math.random } = {}) {
+  constructor({ now = () => Date.now(), rng = Math.random, disconnectGraceMs = DISCONNECT_GRACE_MS } = {}) {
     this.rooms = new Map();
     this.clientRoom = new Map();
+    this.resumeSessions = new Map();
     this.now = now;
     this.rng = rng;
+    const grace = Number(disconnectGraceMs);
+    this.disconnectGraceMs = Number.isFinite(grace) && grace > 0 ? Math.max(1, Math.floor(grace)) : DISCONNECT_GRACE_MS;
   }
 
   createRoom(connectionId, name, rawConfig, identityValue, cosmeticsValue) {
@@ -90,9 +94,10 @@ class RoomManager {
       rouletteActivated: false, seatAssignments: new Map([[identityKey, { playerId: player.id, seatIndex }]]),
       rematchVotes: new Set(), rematchInvitedBy: null
     };
+    const resumeToken = this._issueResumeToken(room, player);
     this.rooms.set(code, room);
     this.clientRoom.set(connectionId, code);
-    return { room, player };
+    return { room, player, resumeToken };
   }
 
   joinRoom(connectionId, codeValue, name, identityValue, cosmeticsValue) {
@@ -103,8 +108,12 @@ class RoomManager {
     if (room.status !== 'waiting') throw new Error('Phòng đã bắt đầu trận hoặc không còn nhận người.');
     const identityKey = cleanIdentity(identityValue, connectionId);
     const priorSeat = room.seatAssignments.get(identityKey);
-    const alreadyConnected = room.players.some(p => p.identityKey === identityKey && p.connected);
-    if (alreadyConnected) throw new Error('Danh tính này đã ở trong phòng.');
+    const existingIdentity = room.players.find(p => p.identityKey === identityKey);
+    if (existingIdentity) {
+      throw new Error(existingIdentity.connected
+        ? 'Danh tính này đã ở trong phòng.'
+        : 'Phiên trước vẫn đang được giữ. Hãy khôi phục kết nối thay vì tham gia lại bằng mã phòng.');
+    }
     if (room.players.length >= room.config.maxPlayers) throw new Error(`Phòng đã đủ ${room.config.maxPlayers} người chơi.`);
     const occupiedSeats = new Set(room.players.map(p => p.seatIndex));
     let seatIndex = priorSeat && !occupiedSeats.has(priorSeat.seatIndex) ? priorSeat.seatIndex : -1;
@@ -118,8 +127,66 @@ class RoomManager {
     const player = this._newPlayer(connectionId, name, seatIndex, identityKey, cosmetics, priorSeat?.playerId);
     room.players.push(player);
     room.seatAssignments.set(identityKey, { playerId: player.id, seatIndex });
+    if (!room.hostPlayerId) room.hostPlayerId = player.id;
+    const resumeToken = this._issueResumeToken(room, player);
     this.clientRoom.set(connectionId, code);
-    return { room, player };
+    return { room, player, resumeToken };
+  }
+
+  _hashResumeToken(token) {
+    return crypto.createHash('sha256').update(token, 'utf8').digest('hex');
+  }
+
+  _invalidateResumeToken(player) {
+    if (!player) return;
+    if (player.resumeTokenHash) this.resumeSessions.delete(player.resumeTokenHash);
+    player.resumeTokenHash = null;
+  }
+
+  _issueResumeToken(room, player) {
+    this._invalidateResumeToken(player);
+    const token = crypto.randomBytes(32).toString('base64url');
+    const tokenHash = this._hashResumeToken(token);
+    player.resumeTokenHash = tokenHash;
+    this.resumeSessions.set(tokenHash, { roomCode: room.code, playerId: player.id });
+    return token;
+  }
+
+  resume(connectionId, tokenValue) {
+    if (this.clientRoom.has(connectionId)) throw new Error('Kết nối này đã thuộc về một phòng.');
+    if (typeof tokenValue !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(tokenValue)) {
+      throw new Error('Mã khôi phục phiên không hợp lệ.');
+    }
+
+    const tokenHash = this._hashResumeToken(tokenValue);
+    const session = this.resumeSessions.get(tokenHash);
+    if (!session) throw new Error('Phiên khôi phục không hợp lệ hoặc đã được sử dụng.');
+
+    const room = this.rooms.get(session.roomCode);
+    const player = room?.players.find(item => item.id === session.playerId);
+    if (!room || !player || player.resumeTokenHash !== tokenHash) {
+      this.resumeSessions.delete(tokenHash);
+      throw new Error('Phòng hoặc phiên khôi phục không còn tồn tại.');
+    }
+    if (player.connected) throw new Error('Phiên này vẫn đang được kết nối trên một thiết bị khác.');
+    if (!Number.isFinite(player.disconnectDeadline) || player.disconnectDeadline <= this.now()) {
+      throw new Error('Đã hết thời gian khôi phục kết nối.');
+    }
+
+    player.connectionId = connectionId;
+    player.connected = true;
+    player.ready = false;
+    player.disconnectedAt = null;
+    player.disconnectDeadline = null;
+    player.disconnectExpired = false;
+    this.clientRoom.set(connectionId, room.code);
+
+    const gamePlayer = room.matchState?.players.find(item => item.id === player.id);
+    if (gamePlayer) gamePlayer.connected = true;
+
+    room.lastEvent = { type: 'player-reconnected', playerId: player.id, name: player.name, at: this.now() };
+    const resumeToken = this._issueResumeToken(room, player);
+    return { room, player, resumeToken };
   }
 
   _newPlayer(connectionId, name, seatIndex, identityKey, cosmetics, existingPlayerId = null) {
@@ -128,7 +195,8 @@ class RoomManager {
       identityKey, seatIndex,
       name: cleanName(name), color: cosmetics.skin === 'skin-classic' ? COLORS[seatIndex % COLORS.length] : SKIN_COLORS[cosmetics.skin],
       skin: cosmetics.skin, avatar: cosmetics.avatar, flag: cosmetics.flag, bomb: cosmetics.bomb, elimination: cosmetics.elimination, trail: cosmetics.trail, celebration: cosmetics.celebration,
-      ready: false, connected: true, joinedAt: this.now()
+      ready: false, connected: true, joinedAt: this.now(),
+      resumeTokenHash: null, disconnectedAt: null, disconnectDeadline: null, disconnectExpired: false
     };
   }
 
@@ -214,9 +282,10 @@ class RoomManager {
     if (room.rematchVotes.has(player.id)) return { room, restarted: false };
     room.rematchVotes.add(player.id);
     if (!room.rematchInvitedBy) room.rematchInvitedBy = player.id;
-    room.lastEvent = { type: 'rematch-vote', playerId: player.id, count: room.rematchVotes.size, required: room.players.filter(p => p.connected).length, at: this.now() };
     const eligible = room.players.filter(p => p.connected);
-    const allVoted = eligible.length >= 2 && eligible.length === room.players.length && eligible.every(p => room.rematchVotes.has(p.id));
+    const pendingReconnect = room.players.some(p => !p.connected && Number.isFinite(p.disconnectDeadline));
+    room.lastEvent = { type: 'rematch-vote', playerId: player.id, count: room.rematchVotes.size, required: eligible.length, at: this.now() };
+    const allVoted = eligible.length >= 2 && !pendingReconnect && eligible.every(p => room.rematchVotes.has(p.id));
     if (allVoted) {
       this._createMatch(room);
       room.lastEvent = { type: 'rematch-started', matchId: room.matchId, at: this.now() };
@@ -424,8 +493,14 @@ class RoomManager {
     return {
       code: room.code, status: room.status, hostPlayerId: room.hostPlayerId,
       config: { boardSize: room.config.boardSize, difficulty: room.config.difficulty, density: room.config.density, mineCount: room.config.mineCount, matchDurationMinutes: room.config.matchDurationMinutes, arenaSkin: room.config.arenaSkin, bombSkin: room.config.bombSkin, maxPlayers: room.config.maxPlayers },
-      players: room.players.map(({ id, name, color, skin, avatar, flag, bomb, elimination, trail, celebration, ready, connected, seatIndex }) => ({ id, name, color, skin, avatar, flag, bomb, elimination, trail, celebration, seatIndex, ready, connected })),
-      rematch: room.matchState?.ended ? { votes: [...(room.rematchVotes || [])], count: (room.rematchVotes || new Set()).size, required: room.players.length, invitedBy: room.rematchInvitedBy || null, inviterName: room.players.find(p => p.id === room.rematchInvitedBy)?.name || null } : null,
+      players: room.players.map(player => ({
+        id: player.id, name: player.name, color: player.color, skin: player.skin, avatar: player.avatar,
+        flag: player.flag, bomb: player.bomb, elimination: player.elimination, trail: player.trail,
+        celebration: player.celebration, seatIndex: player.seatIndex, ready: player.ready, connected: player.connected,
+        reconnectSeconds: !player.connected && Number.isFinite(player.disconnectDeadline)
+          ? Math.max(0, Math.ceil((player.disconnectDeadline - this.now()) / 1000)) : 0
+      })),
+      rematch: room.matchState?.ended ? { votes: [...(room.rematchVotes || [])], count: (room.rematchVotes || new Set()).size, required: room.players.filter(p => p.connected).length, invitedBy: room.rematchInvitedBy || null, inviterName: room.players.find(p => p.id === room.rematchInvitedBy)?.name || null } : null,
       lastEvent: room.lastEvent,
       cursors: [...room.cursors.entries()].map(([playerId, index]) => ({ playerId, index }))
     };
@@ -442,7 +517,13 @@ class RoomManager {
     const player = this.findPlayer(room, connectionId);
     if (!player) throw new Error('Không tìm thấy người chơi trong phòng.');
     if (room.status !== 'playing' || !room.matchState?.ended) throw new Error('Chỉ có thể quay lại sảnh sau khi trận kết thúc.');
-    room.players = room.players.filter(p => p.connected);
+    room.players = room.players.filter(p => {
+      if (p.connected) return true;
+      this._invalidateResumeToken(p);
+      p.disconnectDeadline = null;
+      p.disconnectExpired = true;
+      return false;
+    });
     if (!room.players.length) {
       this.rooms.delete(room.code);
       this.clientRoom.delete(connectionId);
@@ -465,6 +546,9 @@ class RoomManager {
     if (!room) return null;
     const player = this.findPlayer(room, connectionId);
     if (!player) return { room, removedCode: null };
+    this._invalidateResumeToken(player);
+    player.disconnectDeadline = null;
+    player.disconnectExpired = true;
 
     // If someone leaves during the cinematic/roulette before the clock starts, cancel
     // that pregame and return everyone else to the lobby instead of fabricating a death.
@@ -501,7 +585,15 @@ class RoomManager {
     }
 
     if (room.status === 'playing' && room.matchState?.ended) {
-      room.players = room.players.filter(p => p.connectionId !== connectionId && p.connected);
+      room.players = room.players.filter(p => {
+        const keep = p.connectionId !== connectionId && p.connected;
+        if (!keep) {
+          this._invalidateResumeToken(p);
+          p.disconnectDeadline = null;
+          p.disconnectExpired = true;
+        }
+        return keep;
+      });
       room.rematchVotes?.delete(player.id);
       if (room.rematchInvitedBy === player.id) room.rematchInvitedBy = null;
       room.cursors.delete(player.id);
@@ -534,7 +626,127 @@ class RoomManager {
     return { room, removedCode: code };
   }
 
-  disconnect(connectionId) { return this.leave(connectionId); }
+  disconnect(connectionId) {
+    const code = this.clientRoom.get(connectionId);
+    if (!code) return null;
+    const room = this.rooms.get(code);
+    this.clientRoom.delete(connectionId);
+    if (!room) return null;
+
+    const player = this.findPlayer(room, connectionId);
+    if (!player) return { room, removedCode: null };
+
+    const now = this.now();
+    player.connectionId = null;
+    player.connected = false;
+    player.ready = false;
+    player.disconnectedAt = now;
+    player.disconnectDeadline = now + this.disconnectGraceMs;
+    player.disconnectExpired = false;
+    if (room.status === 'ready') room.status = 'waiting';
+
+    this._transferHost(room, player.id);
+    const gamePlayer = room.matchState?.players.find(item => item.id === player.id);
+    if (gamePlayer) gamePlayer.connected = false;
+    room.cursors.delete(player.id);
+    room.lastEvent = {
+      type: 'player-disconnected', playerId: player.id, name: player.name,
+      reconnectSeconds: Math.ceil(this.disconnectGraceMs / 1000), at: now
+    };
+    return { room, playerDisconnected: true, graceExpiresAt: player.disconnectDeadline };
+  }
+
+  expireDisconnectedPlayers(room) {
+    const result = { roomChanged: false, matchChanged: false, roomDeleted: false };
+    if (!room) return result;
+
+    const now = this.now();
+    const expiredPlayers = room.players.filter(player =>
+      !player.connected && Number.isFinite(player.disconnectDeadline) && player.disconnectDeadline <= now
+    );
+
+    for (const player of expiredPlayers) {
+      if (!room.players.includes(player) || player.connected ||
+          !Number.isFinite(player.disconnectDeadline) || player.disconnectDeadline > now) continue;
+
+      player.disconnectDeadline = null;
+      player.disconnectExpired = true;
+      this._invalidateResumeToken(player);
+
+      const state = room.matchState;
+      if (room.status === 'playing' && state && !state.ended && state.started) {
+        const gamePlayer = state.players.find(item => item.id === player.id);
+        if (gamePlayer) {
+          gamePlayer.connected = false;
+          if (gamePlayer.alive) {
+            const wasCurrent = state.currentId === gamePlayer.id;
+            Engine.eliminatePlayer(
+              state.players, state.deathOrder, gamePlayer.id,
+              Number.isInteger(gamePlayer.pos) ? gamePlayer.pos : 0
+            );
+            this._resolveAfterDeath(room, gamePlayer.id);
+            if (!wasCurrent && !state.ended) {
+              const event = { type: 'player-disconnect-expired', playerId: player.id, name: player.name, at: now };
+              state.lastEvent = event;
+              state.lastAction = { ...event };
+            }
+          }
+        }
+        room.lastEvent = { type: 'player-disconnect-expired', playerId: player.id, name: player.name, at: now };
+        result.roomChanged = true;
+        result.matchChanged = true;
+        continue;
+      }
+
+      if (room.status === 'playing' && state && !state.ended && !state.started) {
+        room.players = room.players.filter(item => item.id !== player.id);
+        room.cursors.delete(player.id);
+        this._transferHost(room, player.id);
+        if (!room.players.length) {
+          this.rooms.delete(room.code);
+          result.roomChanged = true;
+          result.roomDeleted = true;
+          return result;
+        }
+        room.status = room.players.length === room.config.maxPlayers && room.players.every(item => item.ready && item.connected) ? 'ready' : 'waiting';
+        room.matchState = null;
+        room.matchId = null;
+        room.cursors.clear();
+        room.seenCommandIds.clear();
+        room.rouletteActivated = false;
+        room.rematchVotes?.clear();
+        room.rematchInvitedBy = null;
+        room.players.forEach(item => { item.ready = false; });
+        room.lastEvent = { type: 'pregame-cancelled', playerId: player.id, at: now };
+        result.roomChanged = true;
+        continue;
+      }
+
+      if (room.status === 'playing' && state?.ended) {
+        room.lastEvent = { type: 'results-player-disconnected', playerId: player.id, name: player.name, at: now };
+        result.roomChanged = true;
+        continue;
+      }
+
+      room.players = room.players.filter(item => item.id !== player.id);
+      room.cursors.delete(player.id);
+      this._transferHost(room, player.id);
+      if (!room.players.length) {
+        this.rooms.delete(room.code);
+        result.roomChanged = true;
+        result.roomDeleted = true;
+        return result;
+      }
+      if (room.status === 'ready') {
+        room.status = 'waiting';
+        room.players.forEach(item => { item.ready = false; });
+      }
+      room.lastEvent = { type: 'player-disconnect-expired', playerId: player.id, name: player.name, at: now };
+      result.roomChanged = true;
+    }
+
+    return result;
+  }
 }
 
-module.exports = { RoomManager, normalizeConfig, normalizeCosmetics, cleanName, DENSITIES, ARENA_SKINS, MATCH_DURATIONS, DEFAULT_MATCH_DURATION_MINUTES, MATCH_SECONDS, TURN_SECONDS, SKIP_PENALTY, PLACE_POINTS };
+module.exports = { RoomManager, normalizeConfig, normalizeCosmetics, cleanName, DENSITIES, ARENA_SKINS, MATCH_DURATIONS, DEFAULT_MATCH_DURATION_MINUTES, MATCH_SECONDS, TURN_SECONDS, DISCONNECT_GRACE_MS, SKIP_PENALTY, PLACE_POINTS };

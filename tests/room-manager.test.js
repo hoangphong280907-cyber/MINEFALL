@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { RoomManager, normalizeConfig, cleanName } = require('../server/room-manager.js');
+const { RoomManager, normalizeConfig, cleanName, DISCONNECT_GRACE_MS } = require('../server/room-manager.js');
 
 function twoPlayerRoom(manager, config = { boardSize: 8, difficulty: 'medium' }) {
   const created = manager.createRoom('c1', 'Phong', config);
@@ -298,7 +298,7 @@ test('Phase 0.9C: board uses the exact selected dimensions and the offline defau
   assert.equal(manager.publicMatchState(room).board.cells.length, 400);
 });
 
-test('Phase 0.9C: disconnecting a player preserves their flags for final scoring', () => {
+test('Phase 0.9C: explicitly leaving a match preserves the leaver flags for final scoring', () => {
   const manager = new RoomManager({ rng: () => 0.37 });
   const room = twoPlayerRoom(manager, { boardSize: 10, difficulty: 'easy' });
   manager.startMatch('c1'); manager.activateRoulette('c1'); manager.beginMatch('c1', room.matchId);
@@ -322,6 +322,161 @@ test('Phase 0.9C: disconnecting a player preserves their flags for final scoring
   const result = state.results.players.find(player => player.id === ownerId);
   assert.equal(result.correctFlags, 1);
   assert.equal(result.flagScore, 1);
+});
+
+
+test('resume tokens are private, single-use, and rotate after a successful reconnect', () => {
+  let now = 1000;
+  const manager = new RoomManager({ now: () => now });
+  const created = manager.createRoom('c1', 'Phong', { boardSize: 8, difficulty: 'easy' }, 'resume-host-identity-001');
+  const { room, player, resumeToken } = created;
+
+  assert.match(resumeToken, /^[A-Za-z0-9_-]{43}$/);
+  assert.notEqual(player.resumeTokenHash, resumeToken);
+  const publicRoom = JSON.stringify(manager.publicRoom(room));
+  assert.equal(publicRoom.includes(resumeToken), false);
+  assert.equal(publicRoom.includes(player.resumeTokenHash), false);
+  assert.equal(publicRoom.includes('resumeTokenHash'), false);
+
+  manager.disconnect('c1');
+  assert.equal(player.connected, false);
+  assert.equal(player.disconnectDeadline, now + DISCONNECT_GRACE_MS);
+  assert.equal(room.players.length, 1);
+
+  now += 5000;
+  const resumed = manager.resume('c2', resumeToken);
+  assert.equal(resumed.room, room);
+  assert.equal(resumed.player.id, player.id);
+  assert.equal(player.connected, true);
+  assert.equal(player.connectionId, 'c2');
+  assert.notEqual(resumed.resumeToken, resumeToken);
+  assert.equal(manager.clientRoom.get('c2'), room.code);
+  assert.throws(() => manager.resume('c3', resumeToken), /không hợp lệ|đã được sử dụng/);
+
+  assert.equal(manager.disconnect('c1'), null, 'a delayed close from the old socket must not disconnect the rebound player');
+  assert.equal(player.connected, true);
+});
+
+test('resume rejects a live session and refuses reconnection after the grace deadline', () => {
+  let now = 0;
+  const manager = new RoomManager({ now: () => now });
+  const created = manager.createRoom('c1', 'Phong', { boardSize: 8, difficulty: 'easy' });
+
+  assert.throws(() => manager.resume('c2', created.resumeToken), /đang được kết nối/);
+  manager.disconnect('c1');
+  now += DISCONNECT_GRACE_MS;
+  assert.throws(() => manager.resume('c2', created.resumeToken), /hết thời gian/);
+  const expiry = manager.expireDisconnectedPlayers(created.room);
+  assert.equal(expiry.roomDeleted, true);
+  assert.equal(manager.rooms.has(created.room.code), false);
+});
+
+test('temporary disconnect keeps a live match player alive and the authoritative turn clock running', () => {
+  let now = 5000;
+  const manager = new RoomManager({ now: () => now, rng: () => 0.23 });
+  const created = manager.createRoom('c1', 'Phong', { boardSize: 10, difficulty: 'easy' });
+  const joined = manager.joinRoom('c2', created.room.code, 'Lan');
+  manager.setReady('c1', true);
+  manager.setReady('c2', true);
+  manager.startMatch('c1');
+  manager.activateRoulette('c1');
+  manager.beginMatch('c1', created.room.matchId);
+
+  const state = created.room.matchState;
+  const currentId = state.currentId;
+  const currentRoomPlayer = created.room.players.find(player => player.id === currentId);
+  const token = currentId === created.player.id ? created.resumeToken : joined.resumeToken;
+  const oldConnection = currentRoomPlayer.connectionId;
+  const originalDeadline = state.turnDeadline;
+
+  manager.disconnect(oldConnection);
+  assert.equal(state.players.find(player => player.id === currentId).alive, true);
+  assert.equal(state.players.find(player => player.id === currentId).connected, false);
+
+  now += 10_000;
+  manager.tickRoom(created.room);
+  assert.equal(state.turnDeadline, originalDeadline);
+  assert.equal(state.turnLeft, 50);
+
+  const resumed = manager.resume('reconnected-socket', token);
+  assert.equal(resumed.player.id, currentId);
+  assert.equal(state.players.find(player => player.id === currentId).alive, true);
+  assert.equal(state.players.find(player => player.id === currentId).connected, true);
+  assert.equal(state.turnDeadline, originalDeadline, 'reconnect must not reset or pause the turn deadline');
+});
+
+test('grace expiry eliminates a disconnected active player exactly once and ends a two-player match', () => {
+  let now = 10_000;
+  const manager = new RoomManager({ now: () => now, rng: () => 0.37 });
+  const created = manager.createRoom('c1', 'Phong', { boardSize: 10, difficulty: 'easy' });
+  manager.joinRoom('c2', created.room.code, 'Lan');
+  manager.setReady('c1', true);
+  manager.setReady('c2', true);
+  manager.startMatch('c1');
+  manager.activateRoulette('c1');
+  manager.beginMatch('c1', created.room.matchId);
+
+  const state = created.room.matchState;
+  const disconnectedId = state.currentId;
+  const disconnectedConnection = created.room.players.find(player => player.id === disconnectedId).connectionId;
+  manager.disconnect(disconnectedConnection);
+
+  now += DISCONNECT_GRACE_MS;
+  const firstExpiry = manager.expireDisconnectedPlayers(created.room);
+  assert.equal(firstExpiry.matchChanged, true);
+  assert.equal(state.players.find(player => player.id === disconnectedId).alive, false);
+  assert.equal(state.players.filter(player => player.alive).length, 1);
+  assert.equal(state.ended, true);
+  assert.equal(state.endReason, 'survivor');
+
+  const secondExpiry = manager.expireDisconnectedPlayers(created.room);
+  assert.equal(secondExpiry.matchChanged, false, 'expiry is applied only once');
+  assert.equal(state.players.find(player => player.id === disconnectedId).alive, false);
+});
+
+test('disconnect grace keeps a pregame room recoverable, then cancels it when the deadline expires', () => {
+  let now = 2000;
+  const manager = new RoomManager({ now: () => now });
+  const created = manager.createRoom('c1', 'Phong', { boardSize: 8, difficulty: 'easy' });
+  manager.joinRoom('c2', created.room.code, 'Lan');
+  manager.setReady('c1', true);
+  manager.setReady('c2', true);
+  manager.startMatch('c1');
+
+  manager.disconnect('c2');
+  assert.equal(created.room.status, 'playing');
+  assert.ok(created.room.matchState);
+  now += DISCONNECT_GRACE_MS;
+  manager.expireDisconnectedPlayers(created.room);
+  assert.equal(created.room.status, 'waiting');
+  assert.equal(created.room.matchState, null);
+  assert.equal(created.room.players.length, 1);
+  assert.equal(created.room.players[0].connected, true);
+});
+
+test('waiting-room grace expiry frees the seat, but the disconnected identity cannot bypass its token', () => {
+  let now = 1000;
+  const manager = new RoomManager({ now: () => now });
+  const created = manager.createRoom('c1', 'Phong', { boardSize: 8, difficulty: 'easy', maxPlayers: 2 }, 'resume-host-identity-002');
+  const room = created.room;
+  manager.joinRoom('c2', room.code, 'Lan', 'resume-guest-identity-002');
+
+  manager.disconnect('c1');
+  assert.throws(
+    () => manager.joinRoom('c3', room.code, 'Imposter', 'resume-host-identity-002'),
+    /đang được giữ/
+  );
+
+  now += DISCONNECT_GRACE_MS;
+  const expiry = manager.expireDisconnectedPlayers(room);
+  assert.equal(expiry.roomChanged, true);
+  assert.equal(room.players.length, 1);
+  assert.equal(room.hostPlayerId, room.players[0].id);
+
+  const replacement = manager.joinRoom('c3', room.code, 'Phong', 'resume-host-identity-002');
+  assert.equal(replacement.player.seatIndex, 0);
+  assert.notEqual(replacement.player.id, created.player.id);
+  assert.notEqual(room.hostPlayerId, replacement.player.id, 'an expired former host does not regain host authority');
 });
 
 test('Phase 0.9C: turn timeout applies the five-point penalty and advances to a living player', () => {

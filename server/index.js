@@ -120,14 +120,24 @@ function handleMessage(ws, raw) {
     switch (message.type) {
       case 'room:create': {
         const payload = message.payload && typeof message.payload === 'object' ? message.payload : {};
-        const { room } = manager.createRoom(connectionId, payload.name, payload.config, payload.identity, payload.cosmetics);
+        const { room, player, resumeToken } = manager.createRoom(connectionId, payload.name, payload.config, payload.identity, payload.cosmetics);
+        send(ws, 'room:session', { roomCode: room.code, playerId: player.id, resumeToken, resumed: false });
         broadcastRoom(room);
         break;
       }
       case 'room:join': {
         const payload = message.payload && typeof message.payload === 'object' ? message.payload : {};
-        const { room } = manager.joinRoom(connectionId, payload.code, payload.name, payload.identity, payload.cosmetics);
+        const { room, player, resumeToken } = manager.joinRoom(connectionId, payload.code, payload.name, payload.identity, payload.cosmetics);
+        send(ws, 'room:session', { roomCode: room.code, playerId: player.id, resumeToken, resumed: false });
         broadcastRoom(room);
+        break;
+      }
+      case 'room:resume': {
+        const payload = message.payload && typeof message.payload === 'object' ? message.payload : {};
+        const { room, player, resumeToken } = manager.resume(connectionId, payload.resumeToken);
+        send(ws, 'room:session', { roomCode: room.code, playerId: player.id, resumeToken, resumed: true });
+        broadcastRoom(room);
+        broadcastMatchState(room);
         break;
       }
       case 'player:ready': {
@@ -266,7 +276,22 @@ const wss = new WebSocketServer({ server, path: '/ws', maxPayload: MAX_MESSAGE_B
   if (!origin || origin === `http://${host}` || origin === `https://${host}`) done(true);
   else done(false, 403, 'Origin not allowed');
 } });
+
+const heartbeatTimer = setInterval(() => {
+  for (const ws of wss.clients) {
+    if (ws.isAlive === false) {
+      ws.terminate();
+      continue;
+    }
+    ws.isAlive = false;
+    try { ws.ping(); }
+    catch { ws.terminate(); }
+  }
+}, 10_000);
+heartbeatTimer.unref?.();
 wss.on('connection', ws => {
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
   ws.clientId = `conn_${require('node:crypto').randomUUID()}`;
   ws.rateWindowStart = Date.now();
   ws.rateCount = 0;
@@ -295,7 +320,10 @@ wss.on('connection', ws => {
 // Server-authoritative clocks. Clients only display these values; they never decide when a turn or match ends.
 const gameClock = setInterval(() => {
   for (const room of manager.rooms.values()) {
-    if (manager.tickRoom(room)) broadcastMatchState(room);
+    const expiration = manager.expireDisconnectedPlayers(room);
+    if (manager.rooms.get(room.code) !== room) continue;
+    if (expiration.roomChanged) broadcastRoom(room);
+    if (expiration.matchChanged || manager.tickRoom(room)) broadcastMatchState(room);
   }
 }, 1000);
 
@@ -312,6 +340,7 @@ server.listen(PORT, HOST, () => {
 
 function shutdown() {
   clearInterval(gameClock);
+  clearInterval(heartbeatTimer);
   for (const timer of pendingMatchBroadcasts.values()) clearTimeout(timer);
   pendingMatchBroadcasts.clear();
   for (const client of wss.clients) client.close(1001, 'server shutdown');
