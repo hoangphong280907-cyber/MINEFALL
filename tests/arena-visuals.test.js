@@ -31,5 +31,6 @@ test('particle effect catalogue includes material-specific and cosmetic effects'
 
 test('renderer module can be imported in Node without a browser DOM', () => {
   assert.equal(typeof ArenaVisuals.mount, 'function');
+  assert.equal(typeof ArenaVisuals.paintPreview, 'function');
   assert.equal(ArenaVisuals.version, '1.0.0');
 });
