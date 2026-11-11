@@ -459,6 +459,34 @@
     return instance;
   }
 
+  function paintPreview(canvas,themeId) {
+    if(!canvas||typeof canvas.getContext!=='function')return false;
+    const rect=canvas.getBoundingClientRect();
+    const width=Math.max(1,rect.width||220),height=Math.max(1,rect.height||108);
+    const dpr=Math.min((typeof devicePixelRatio==='number'?devicePixelRatio:1),1.5);
+    canvas.width=Math.max(1,Math.round(width*dpr));canvas.height=Math.max(1,Math.round(height*dpr));
+    const ctx=canvas.getContext('2d');if(!ctx)return false;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const theme=resolveTheme(themeId),gap=3,cols=7,rows=3,pad=4;
+    const tileW=(width-pad*2-gap*(cols-1))/cols,tileH=(height-pad*2-gap*(rows-1))/rows;
+    ctx.fillStyle=theme.gap;ctx.fillRect(0,0,width,height);
+    for(let i=0;i<cols*rows;i++){
+      const x=pad+(i%cols)*(tileW+gap),y=pad+Math.floor(i/cols)*(tileH+gap),seed=hash(theme.id+':preview:'+i);
+      const gradient=ctx.createLinearGradient(x,y,x+tileW,y+tileH);
+      gradient.addColorStop(0,theme.base[0]);gradient.addColorStop(1,theme.base[1]);
+      roundedRect(ctx,x,y,tileW,tileH,3);ctx.fillStyle=gradient;ctx.fill();
+      ctx.strokeStyle='rgba(240,250,255,.22)';ctx.lineWidth=.7;ctx.stroke();
+      drawMaterial(ctx,x+1,y+1,tileW-2,tileH-2,theme,seed,performance.now(),false);
+    }
+    const sheen=ctx.createLinearGradient(0,0,width,height*.85);
+    sheen.addColorStop(0,'rgba(255,255,255,.14)');sheen.addColorStop(.42,'rgba(255,255,255,.015)');sheen.addColorStop(1,'rgba(0,0,0,.22)');
+    ctx.fillStyle=sheen;ctx.fillRect(0,0,width,height);
+    const vignette=ctx.createLinearGradient(0,0,0,height);
+    vignette.addColorStop(0,'rgba(0,0,0,.05)');vignette.addColorStop(1,'rgba(0,0,0,.28)');
+    ctx.fillStyle=vignette;ctx.fillRect(0,0,width,height);
+    return true;
+  }
+
   function mount(wrap,grid,options={}) {
     if(!wrap||!grid||typeof document==='undefined')return null;
     let instance=instances.get(wrap);
@@ -474,6 +502,7 @@
     themeIds: Object.freeze(Object.keys(THEMES)),
     effectIds: Object.freeze(Object.keys(EFFECT_COLORS)),
     resolveTheme,
+    paintPreview,
     mount
   });
 });
