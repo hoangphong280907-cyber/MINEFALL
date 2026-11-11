@@ -1,0 +1,49 @@
+/* MINEFALL Arena Visuals: material-rendered board layers */
+.board-wrap.arena-visual-active {
+  background: #080f15;
+  box-shadow: 0 16px 34px #0009, inset 0 0 0 2px #ffffff0a, inset 0 0 24px #0008;
+}
+.arena-surface-canvas,
+.arena-fx-canvas {
+  position: absolute;
+  inset: 3px;
+  display: block;
+  width: auto;
+  height: auto;
+  pointer-events: none;
+}
+.arena-surface-canvas { z-index: 0; }
+.arena-fx-canvas {
+  z-index: 4;
+  opacity: .72;
+  mix-blend-mode: screen;
+}
+.board-grid.arena-materialized {
+  z-index: 2;
+  background: transparent !important;
+}
+.board-grid.arena-materialized .cell {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.board-grid.arena-materialized .cell.selected {
+  box-shadow: inset 0 0 0 2px #ffe09a, 0 0 0 1px #ffc267dd, 0 0 12px #ffc26766 !important;
+}
+.board-grid.arena-materialized .cell:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--cyan) !important;
+}
+.board-grid.arena-materialized .cell.exploded {
+  animation: arenaImpactFlash .42s ease-out;
+}
+.pawn-layer { z-index: 6; }
+@keyframes arenaImpactFlash {
+  0% { filter: brightness(2.2) saturate(1.5); }
+  100% { filter: brightness(1) saturate(1); }
+}
+@media (max-width: 600px) {
+  .arena-fx-canvas { opacity: .5; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arena-fx-canvas { opacity: .28; }
+}
