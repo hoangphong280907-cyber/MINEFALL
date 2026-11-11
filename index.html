@@ -667,7 +667,13 @@ function renderShop(){
     const owned=isItemOwned(category,item.id),equipped=profile.equipped[category]===item.id;
     const card=document.createElement('article');card.className='shop-item';
     const preview=document.createElement('div');preview.className='shop-preview '+(item.preview||item.id);preview.style.setProperty('--preview-color',item.color||'#63e0d5');
-    const icon=document.createElement('span');icon.textContent=item.emoji;preview.appendChild(icon);
+    const icon=document.createElement('span');icon.textContent=item.emoji;
+    if(category==='arena'&&window.MinefallArenaVisuals){
+      preview.classList.add('arena-material-preview');
+      const material=document.createElement('canvas');material.className='arena-preview-canvas';material.setAttribute('aria-hidden','true');
+      preview.appendChild(material);
+      window.MinefallArenaVisuals.paintPreview(material,item.id);
+    }else preview.appendChild(icon);
     if((category==='flag'||category==='bomb')&&item.asset){const asset=createCosmeticImage(category,item,'shop-preview-art',item.title);if(asset){preview.classList.add('has-art');asset.addEventListener('error',()=>preview.classList.remove('has-art'),{once:true});preview.appendChild(asset);}}
     if(category==='skin'){const asset=createCosmeticImage(category,item,'shop-preview-art',item.title);if(asset){preview.classList.add('has-art');asset.addEventListener('error',()=>preview.classList.remove('has-art'),{once:true});preview.appendChild(asset);}}
     if(category==='arena'&&Array.isArray(item.numberColors)){const sample=document.createElement('div');sample.className='shop-number-sample';item.numberColors.slice(0,8).forEach((color,index)=>{const n=document.createElement('i');n.textContent=String(index+1);n.style.color=color;sample.appendChild(n);});preview.appendChild(sample);}
