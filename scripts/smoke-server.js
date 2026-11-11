@@ -92,6 +92,8 @@ async function main() {
       ['/engine.js', 'javascript'],
       ['/cosmetics.js', 'javascript'],
       ['/online-client.js', 'javascript'],
+      ['/arena-visuals.js', 'javascript'],
+      ['/arena-visuals.css', 'text/css'],
       ['/online.css', 'text/css'],
       ['/assets/mines/bomb-standard.svg', 'image/svg+xml'],
       ['/assets/flags/flag-vietnam.svg', 'image/svg+xml']
