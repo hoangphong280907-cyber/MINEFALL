@@ -194,7 +194,6 @@
         if (socket !== ws || settled) return;
         setConnectionStatus('Không thể kết nối');
         showMessage('Không kết nối được máy chủ. Kiểm tra server rồi thử lại.', true);
-        socket = null;
         try { ws.close(); } catch {}
         done(false);
       }, 8000);
@@ -324,12 +323,7 @@
           resetPregame(true);
           introStage = 'done';
           introMatchId = incomingState.matchId || null;
-          if (room?.status === 'playing') {
-            window.MINEFALL_APP?.applyOnlineSnapshot(incomingState, selfPlayerId, {
-              ...room,
-              config: { ...room.config, ...(msg.roomConfig || {}) }
-            });
-          }
+          // The common snapshot path below applies the authoritative state once.
         } else if (justResumedSession && incomingState) {
           justResumedSession = false;
         }
