@@ -226,7 +226,7 @@
   }
 
   function effectKind(effect) {
-    const map={fire:'ember',ice:'shard',toxic:'bubble',lightning:'spark',void:'orb',pixel:'pixel',cosmic:'star',confetti:'confetti',plasma:'orb',standard:'spark',
+    const map={fire:'ember',ice:'shard',toxic:'bubble',lightning:'bolt',circuit:'bolt',void:'orb',pixel:'pixel',cosmic:'star',confetti:'confetti',plasma:'orb',standard:'spark',
       dust:'dust',ember:'ember',frost:'shard',neon:'spark',shadow:'smoke',rainbow:'star',sakura:'petal',circuit:'spark',leaf:'leaf',
       tombstone:'dust',stone:'shard',rocket:'ember',freeze:'shard',burst:'spark',flames:'ember'};
     return map[effect]||'spark';
@@ -241,6 +241,10 @@
     if(p.kind==='ember'||p.kind==='spark'){
       ctx.strokeStyle=p.color;ctx.lineWidth=Math.max(.7,s*.35);ctx.beginPath();ctx.moveTo(-p.vx*.025,-p.vy*.025);ctx.lineTo(0,0);ctx.stroke();
       ctx.fillStyle=p.color;ctx.shadowBlur=p.kind==='ember'?s*2: s*3;ctx.shadowColor=p.color;ctx.beginPath();ctx.arc(0,0,Math.max(.7,s*.45),0,Math.PI*2);ctx.fill();
+    } else if(p.kind==='bolt'){
+      ctx.strokeStyle=p.color;ctx.lineWidth=Math.max(1,s*.48);ctx.lineJoin='round';ctx.lineCap='round';ctx.shadowBlur=s*2.5;ctx.shadowColor=p.color;
+      ctx.beginPath();ctx.moveTo(-s*.35,-s*1.8);ctx.lineTo(s*.2,-s*.55);ctx.lineTo(-s*.12,-s*.34);ctx.lineTo(s*.42,s*1.45);ctx.stroke();
+      ctx.shadowBlur=0;ctx.lineWidth=Math.max(.55,s*.16);ctx.strokeStyle='#ffffff';ctx.beginPath();ctx.moveTo(-s*.35,-s*1.8);ctx.lineTo(s*.2,-s*.55);ctx.lineTo(-s*.12,-s*.34);ctx.lineTo(s*.42,s*1.45);ctx.stroke();
     } else if(p.kind==='snow'||p.kind==='shard'){
       ctx.fillStyle=p.color;ctx.shadowBlur=2;ctx.shadowColor=p.color;ctx.beginPath();ctx.moveTo(0,-s);ctx.lineTo(s*.48,-s*.15);ctx.lineTo(s*.24,s);ctx.lineTo(-s*.45,s*.2);ctx.closePath();ctx.fill();
     } else if(p.kind==='bubble'){
@@ -317,9 +321,9 @@
       const x=Math.random()*m.width;
       const y=kind==='ember'?m.height+5:Math.random()*m.height;
       const speed=kind==='bubble'?-1:kind==='ember'?-1:kind==='snow'?1:kind==='dust'?.3:.55;
-      const colors=kind==='ember'?['#ffca6a','#ff8a3d']:kind==='snow'?['#e8ffff','#a6e8fa']:kind==='bubble'?['#b6f8f5','#78bdd0']:kind==='spore'?['#b5e29a','#e0eaa2']:kind==='spark'?['#77fff0','#b7a9ff']:kind==='petal'?['#ffd0e5','#f5a6c8']:['#e3d2a8','#bba27b'];
+      const colors=kind==='ember'?['#ffca6a','#ff8a3d']:kind==='snow'?['#e8ffff','#a6e8fa']:kind==='bubble'?(theme.id==='arena-toxic'?['#d4ff72','#9eea55','#62cb8a']:['#b6f8f5','#78bdd0']):kind==='spore'?['#b5e29a','#e0eaa2']:kind==='spark'?['#77fff0','#b7a9ff']:kind==='star'?['#e4d5ff','#9e8cff','#85eaff']:kind==='petal'?['#ffd0e5','#f5a6c8']:['#e3d2a8','#bba27b'];
       const size=kind==='snow'?1.5+Math.random()*2.2:kind==='bubble'?2+Math.random()*3:1+Math.random()*2;
-      const particle=createParticle(x,y,(Math.random()-.5)*8, speed*(10+Math.random()*20),size,colors[Math.floor(Math.random()*colors.length)],3+Math.random()*4,kind==='snow'?'snow':kind==='bubble'?'bubble':kind==='spore'?'orb':kind==='petal'?'petal':kind==='spark'?'spark':kind==='ember'?'ember':'dust');
+      const particle=createParticle(x,y,(Math.random()-.5)*8, speed*(10+Math.random()*20),size,colors[Math.floor(Math.random()*colors.length)],3+Math.random()*4,kind==='snow'?'snow':kind==='bubble'?'bubble':kind==='spore'?'orb':kind==='star'?'star':kind==='petal'?'petal':kind==='spark'?'spark':kind==='ember'?'ember':'dust');
       particle.alpha=kind==='spark'?.42:.34;particle.gravity=kind==='ember'?-4:kind==='snow'?2:0;
       particle.rotation=Math.random()*Math.PI*2;particle.spin=(Math.random()-.5)*.7;
       instance.particles.push(particle);
