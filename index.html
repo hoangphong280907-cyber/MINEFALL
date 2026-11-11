@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="dark">
 <title>MINEFALL — Online Survival Game</title>
 <link rel="stylesheet" href="./online.css">
+<link rel="stylesheet" href="./arena-visuals.css">
 <style>
 :root{--bg:#0a1017;--panel:#121c27;--panel2:#182634;--line:#2c404d;--muted:#91a5b3;--text:#edf5f8;--cyan:#63e0d5;--amber:#ffc267;--red:#ff6570;--green:#79dba6;--blue:#75a8ff;--shadow:0 18px 48px #0005}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(ellipse at 50% -15%,#213540 0,#101923 40%,var(--bg) 82%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button{font:inherit;cursor:pointer}button:disabled{opacity:.38;cursor:not-allowed;transform:none!important}button:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}#app{min-height:100vh}.shell{width:min(1580px,100%);margin:auto;padding:20px 22px 28px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.logo{width:43px;height:43px;border:1px solid #42616b;border-radius:13px;background:linear-gradient(145deg,#29434b,#101f29);display:grid;place-items:center;position:relative}.logo:before{content:"";width:21px;height:21px;border:2px solid var(--cyan);transform:rotate(45deg);box-shadow:0 0 14px #63e0d533}.logo:after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--amber);top:7px;right:7px}.brand-name{font-size:16px;letter-spacing:.2em;font-weight:950}.brand-name span{color:var(--cyan)}.brand-sub{font-size:9px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-top:4px}.top-right{display:flex;align-items:center;gap:8px}.tag{border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:10px;letter-spacing:.06em;color:#bdccd4;background:#101a23}.tag strong{color:var(--cyan)}.btn{border:1px solid var(--line);border-radius:10px;padding:11px 14px;color:var(--text);font-weight:800;background:#1a2934;transition:transform .14s,background .14s,border-color .14s}.btn:hover:not(:disabled){transform:translateY(-1px);background:#243944;border-color:#56717d}.btn-primary{background:linear-gradient(135deg,#72f0df,#42bec5);color:#061519;border-color:#8df4e8;box-shadow:0 7px 22px #42bec522}.btn-primary:hover:not(:disabled){background:linear-gradient(135deg,#9dffef,#63d6d8)}.btn-danger{background:#321c25;border-color:#663944;color:#ffe5e6}.btn-small{padding:8px 11px;font-size:11px}.screen{display:none}.screen.active{display:block}.panel{background:linear-gradient(145deg,#16222eF5,#111a23F7);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.eyebrow{font-size:10px;font-weight:900;letter-spacing:.17em;text-transform:uppercase;color:var(--cyan)}.home-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(330px,.9fr);gap:18px}.hero{padding:clamp(25px,4vw,52px);min-height:455px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;right:-100px;bottom:-170px;width:380px;height:380px;border:1px solid #63e0d51c;transform:rotate(45deg);box-shadow:0 0 0 35px #63e0d506,0 0 0 70px #63e0d504;pointer-events:none}.hero h1{font-size:clamp(48px,7vw,84px);line-height:.92;letter-spacing:-.075em;margin:14px 0 18px;font-weight:1000}.hero h1 span{color:var(--cyan)}.hero p{font-size:14px;line-height:1.8;color:#adbec9;max-width:560px}.hero-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:17px}.chip{padding:7px 10px;border:1px solid #344a57;border-radius:8px;background:#20313c;color:#ccdae1;font-size:10px}.pod-demo{display:flex;align-items:center;gap:16px;margin-top:30px;max-width:390px}.pod-icon{height:77px;width:74px;flex:none;position:relative;animation:bob 3s ease-in-out infinite}.pod-shell{position:absolute;left:12px;top:3px;width:50px;height:52px;background:linear-gradient(135deg,#bac8cf,#495f6a);clip-path:polygon(18% 0,82% 0,100% 22%,100% 80%,80% 100%,20% 100%,0 80%,0 22%);filter:drop-shadow(0 6px 5px #0009)}.pod-window{position:absolute;left:23px;top:14px;width:28px;height:23px;border:3px solid #314a56;border-radius:50%;background:linear-gradient(145deg,#70e6e0,#22475a)}.pod-flame{position:absolute;width:28px;height:14px;left:23px;bottom:2px;background:linear-gradient(#ffd37c,#ed7440);clip-path:polygon(15% 0,85% 0,100% 100%,0 100%)}.pod-copy b{font-size:12px;letter-spacing:.1em}.pod-copy small{display:block;color:var(--muted);line-height:1.6;margin-top:5px;font-size:11px}.setup{padding:25px;display:flex;flex-direction:column;gap:19px}.setup h2{font-size:24px;letter-spacing:-.04em;margin:7px 0 0}.muted{color:var(--muted)}.setup-intro{font-size:12px;line-height:1.7;margin:0}.setup-section{border-top:1px solid var(--line);padding-top:17px}.setup-label{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#cbd9e0;margin-bottom:10px}.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.choice{border:1px solid #304551;border-radius:11px;padding:12px 7px;background:#0e171f;color:#afc2cc;display:flex;flex-direction:column;gap:5px;align-items:center}.choice strong{font-size:20px;color:#f2f7fa}.choice span{font-size:9px;letter-spacing:.08em}.choice.active{border-color:var(--cyan);background:linear-gradient(145deg,#1c3b42,#142832);box-shadow:inset 0 0 0 1px #63e0d51c}.choice.active strong{color:var(--cyan)}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.stat{padding:11px 10px;border-radius:10px;background:#0e171f;border:1px solid #263a46}.stat strong{display:block;font-size:17px}.stat span{display:block;color:var(--muted);font-size:9px;letter-spacing:.08em;text-transform:uppercase;margin-top:4px}.note{font-size:11px;line-height:1.65;border:1px solid #324751;background:#111e27;padding:12px;border-radius:10px;color:#a8bbc5}.note b{color:var(--amber)}.setup-footer{display:grid;gap:10px;margin-top:auto}.setup-footer .btn{padding:15px}.small-center{text-align:center;font-size:10px;color:#8296a2;line-height:1.6}.footer{font-size:10px;text-align:center;color:#647b88;padding:20px 0 0;letter-spacing:.08em}
@@ -427,6 +428,7 @@ body.online-session-active .top-right { gap: 0; }
 <div id="endSequenceFx" class="end-sequence-fx hidden" aria-hidden="true"></div>
 <script src="./cosmetics.js"></script>
 <script src="./engine.js"></script>
+<script src="./arena-visuals.js"></script>
 <script>
 'use strict';
 const Engine = window.MinefallEngine;
@@ -787,17 +789,27 @@ function renderCell(i){
   if(cell.endRevealFlip) el.classList.add('end-reveal-flip');
   el.dataset.visualState=visualNow;el.dataset.flagOwner=cell.flagOwner||'';el.dataset.renderSignature=signature;
 }
+let arenaVisualInstance=null;
 function applyArenaTheme(){
   const wrap=$('boardWrap');if(!wrap)return;
   const arena=(state.onlineMode&&state.onlineArenaSkin)||profile.equipped.arena||'arena-standard';
   for(const theme of SHOP_CATALOG.arena.map(item=>item.id))wrap.classList.toggle(theme,theme===arena);
   const item=getShopItem('arena',arena),colors=item?.numberColors||getShopItem('arena','arena-standard').numberColors;
   colors.forEach((color,index)=>wrap.style.setProperty('--num-'+(index+1),color));
+  if(window.MinefallArenaVisuals){
+    if(!arenaVisualInstance)arenaVisualInstance=window.MinefallArenaVisuals.mount(wrap,boardGrid,{theme:arena,size:SIZE,cells:state.cells});
+    else arenaVisualInstance.setTheme(arena);
+  }
 }
 function renderBoard(){
   applyArenaTheme();
   if(boardGrid.children.length!==CELL_COUNT){buildBoard();return;}
   for(let i=0;i<CELL_COUNT;i++) renderCell(i);
+  arenaVisualInstance?.updateBoard({
+    theme:(state.onlineMode&&state.onlineArenaSkin)||profile.equipped.arena||'arena-standard',
+    size:SIZE,
+    cells:state.cells.map((cell,index)=>cell?{...cell,selected:state.selected===index}:cell)
+  });
   $('flagCount').textContent=String(state.cells.filter(cell=>cell.flagOwner!==null).length);
 }
 function updateCurrentCellClue(){
@@ -1059,63 +1071,30 @@ function showRevealWave(origin,indices){
 }
 function showExplosionBurst(index,player=null){
   const wrap=$('boardWrap');wrap.classList.remove('board-hit');void wrap.offsetWidth;wrap.classList.add('board-hit');
-  // The room host chooses one bomb skin for the entire online match. Offline uses the local loadout.
+  // Render a physical particle burst on the shared arena canvas instead of stacking emoji DOM nodes.
   const bombId=state.onlineMode?(state.onlineBombSkin||'bomb-standard'):(profile.equipped.bomb||player?.bomb||'bomb-standard');
   const bomb=getShopItem('bomb',bombId);
-  const effect=bomb.effect||'standard';
-  const {r,c}=rc(index),burst=document.createElement('div');burst.className='board-burst fx-'+effect+' bomb-effect-'+bomb.id;
-  burst.dataset.bombSkin=bomb.id;burst.setAttribute('aria-label',bomb.title+' · vụ nổ');
-  burst.style.setProperty('--blast-color',(bomb.palette&&bomb.palette[1])||'#ffd36b');
-  burst.style.left=((c+.5)/SIZE*100)+'%';burst.style.top=((r+.5)/SIZE*100)+'%';
-  const shockwave=document.createElement('span');shockwave.className='burst-shockwave';burst.appendChild(shockwave);
-  const flare=document.createElement('span');flare.className='burst-flare';burst.appendChild(flare);
-  const core=createCosmeticImage('bomb',bomb,'burst-core burst-core-image',bomb.title)||document.createElement('span');if(!core.classList.contains('burst-core-image')){core.className='burst-core mine-fallback';core.textContent=bomb.emoji;}burst.appendChild(core);
-  const colors=bomb.palette||['#ffd36b','#ff735f','#fff4d6','#ffb35b'];
-  const coarse=window.matchMedia&&window.matchMedia('(pointer:coarse)').matches;
-  const count=coarse?7:13;
-  const particleShape=({fire:'flame',ice:'shard',toxic:'bubble',lightning:'bolt',void:'orb',pixel:'pixel',cosmic:'star',confetti:'confetti',plasma:'plasma',standard:'spark'})[effect]||'spark';
-  for(let i=0;i<count;i++){
-    const p=document.createElement('span');p.className='burst-particle particle-'+particleShape;
-    const angle=(Math.PI*2*i/count)+(Math.random()-.5)*.24;
-    const dist=(effect==='void'?8:effect==='ice'?20:16)+Math.random()*(coarse?18:34);
-    p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist+'px');p.style.setProperty('--particle-color',colors[i%colors.length]);
-    p.style.setProperty('--particle-delay',(Math.random()*.07)+'s');
-    burst.appendChild(p);
-  }
-  // Secondary signature layers make the purchased type readable beyond a palette swap.
-  const signatureCount=effect==='lightning'?4:effect==='ice'?6:effect==='void'?2:effect==='plasma'?3:effect==='fire'?5:effect==='toxic'?5:effect==='cosmic'?7:effect==='pixel'?8:effect==='confetti'?10:3;
-  for(let i=0;i<signatureCount;i++){
-    const detail=document.createElement('span');detail.className='burst-signature signature-'+effect;
-    detail.style.setProperty('--signature-angle',(360*i/signatureCount)+'deg');
-    detail.style.setProperty('--signature-delay',(i*18)+'ms');
-    detail.style.setProperty('--particle-color',colors[i%colors.length]);
-    burst.appendChild(detail);
-  }
-  pawnLayer.appendChild(burst);scheduleVisualTimer(()=>burst.remove(),980);
+  arenaVisualInstance?.impact(index,bomb.effect||'standard',bomb.palette||null);
 }
-function clearMovementTrailsForPlayer(playerId){for(const node of pawnLayer.querySelectorAll('.movement-trail'))if(node.dataset.playerId===String(playerId))node.remove();}
-function clearRoundDecorations(){pawnLayer.querySelectorAll('.movement-trail,.tombstone-marker,.elimination-fx').forEach(node=>node.remove());}
+function clearMovementTrailsForPlayer(playerId){
+  pawnLayer.querySelectorAll('.movement-trail').forEach(node=>{if(node.dataset.playerId===String(playerId))node.remove();});
+  arenaVisualInstance?.clearPlayerTrails(playerId);
+}
+function clearRoundDecorations(){
+  pawnLayer.querySelectorAll('.movement-trail,.tombstone-marker,.elimination-fx').forEach(node=>node.remove());
+  arenaVisualInstance?.clearTransient();
+}
 function spawnMovementTrail(index,player,fromIndex=null){
   if(!Number.isInteger(index)||!player||!player.alive)return;
-  const layer=pawnLayer;if(layer.querySelectorAll('.movement-trail').length>48)layer.querySelector('.movement-trail')?.remove();
   const trail=getShopItem('trail',player.trail||(player.isHuman?profile.equipped.trail:'trail-dust')||'trail-dust');
-  const {r,c}=rc(index);let dx=0,dy=0;
-  if(Number.isInteger(fromIndex)){const from=rc(fromIndex);dx=c-from.c;dy=r-from.r;const length=Math.hypot(dx,dy)||1;dx/=length;dy/=length;}
-  const node=document.createElement('span');node.className='movement-trail '+trail.id;node.textContent=trail.emoji;node.dataset.playerId=String(player.id);
-  // Leave the mark just behind the body, in the direction opposite travel.
-  node.style.left=((c+.5-dx*.22)/SIZE*100)+'%';node.style.top=((r+.5-dy*.22)/SIZE*100)+'%';layer.appendChild(node);scheduleVisualTimer(()=>node.remove(),1480);
+  arenaVisualInstance?.trail(Number.isInteger(fromIndex)?fromIndex:index,index,trail.effect||'dust',player.id);
 }
 function showEliminationEffect(player,index){
   if(!player||!Number.isInteger(index))return;
   clearMovementTrailsForPlayer(player.id);
   const item=getShopItem('elimination',player.elimination||(player.isHuman?profile.equipped.elimination:'elim-standard')||'elim-standard');
-  const {r,c}=rc(index);
-  if(item.id==='elim-tombstone'){
-    const marker=document.createElement('div');marker.className='tombstone-marker';marker.dataset.playerId=String(player.id);marker.style.left=((c+.5)/SIZE*100)+'%';marker.style.top=((r+.5)/SIZE*100)+'%';marker.setAttribute('aria-label','Mộ của '+player.name);
-    const icon=document.createElement('span');icon.textContent='🪦';const name=document.createElement('small');name.textContent='RIP · '+player.name;marker.append(icon,name);pawnLayer.appendChild(marker);return;
-  }
-  const node=document.createElement('span');node.className='elimination-fx '+item.id;node.textContent=item.emoji;node.setAttribute('aria-label',item.title);
-  node.style.left=((c+.5)/SIZE*100)+'%';node.style.top=((r+.5)/SIZE*100)+'%';pawnLayer.appendChild(node);scheduleVisualTimer(()=>node.remove(),1250);
+  // The effect is rendered as moving geometry and particles, never as a single emoji glyph.
+  arenaVisualInstance?.eliminate(index,item.effect||'standard');
 }
 
 function getMoveStepDelay(pathLength){
