@@ -47,3 +47,29 @@
 @media (prefers-reduced-motion: reduce) {
   .arena-fx-canvas { opacity: .28; }
 }
+
+/* Arena shop cards use the same material renderer as the live board. */
+.shop-preview.arena-material-preview {
+  background: #101a24;
+  isolation: isolate;
+}
+.shop-preview.arena-material-preview::before {
+  z-index: 1;
+  opacity: .12;
+}
+.shop-preview.arena-material-preview .arena-preview-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.shop-preview.arena-material-preview .shop-number-sample {
+  z-index: 2;
+  padding: 3px 4px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #071018aa, #07101855, #071018aa);
+  text-shadow: 0 1px 3px #000;
+}
