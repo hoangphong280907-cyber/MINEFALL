@@ -26,6 +26,7 @@
 
   const EFFECT_COLORS = Object.freeze({
     standard: ['#fff0b0','#ffc65f','#ff754e','#b84a38'],
+    stone: ['#e7e3d7','#a7a79f','#777d7b','#c8c4b7'],
     fire: ['#fff3a6','#ffb43d','#ff682f','#d93625'],
     ice: ['#f5ffff','#a9efff','#63c8f4','#8faeff'],
     toxic: ['#eeff9a','#b8ed55','#62cc6c','#d4ff86'],
@@ -49,6 +50,7 @@
 
   const instances = new WeakMap();
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const coarsePointer = () => typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
   const mix = (a, b, amount) => a + (b - a) * amount;
   const hash = value => {
     let h = 2166136261;
@@ -286,13 +288,15 @@
       if(instance.destroyed)return;
       const rect=grid.getBoundingClientRect();
       if(!rect.width||!rect.height)return;
-      const coarse=typeof matchMedia==='function'&&matchMedia('(pointer: coarse)').matches;
+      const coarse=coarsePointer();
       const dpr=Math.min(window.devicePixelRatio||1,coarse?1.25:1.65);
       const gapX=parseFloat(getComputedStyle(grid).columnGap)||1;
       const gapY=parseFloat(getComputedStyle(grid).rowGap)||gapX;
       instance.metrics={width:rect.width,height:rect.height,dpr,gapX,gapY,cellWidth:(rect.width-gapX*(instance.size-1))/instance.size,cellHeight:(rect.height-gapY*(instance.size-1))/instance.size};
+      const pixelWidth=Math.max(1,Math.round(rect.width*dpr));
+      const pixelHeight=Math.max(1,Math.round(rect.height*dpr));
       for(const canvas of [surface,fx]){
-        canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));
+        if(canvas.width!==pixelWidth||canvas.height!==pixelHeight){canvas.width=pixelWidth;canvas.height=pixelHeight;}
         canvas.style.width=rect.width+'px';canvas.style.height=rect.height+'px';
       }
       instance.surfaceContext.setTransform(dpr,0,0,dpr,0,0);
@@ -342,7 +346,7 @@
       if(!ctx||!m)return;
       ctx.clearRect(0,0,m.width,m.height);
 
-      if(!instance.reducedMotion&&now-instance.lastAmbient>240&&instance.particles.length<(matchMedia('(pointer: coarse)').matches?12:22)){
+      if(!instance.reducedMotion&&now-instance.lastAmbient>240&&instance.particles.length<(coarsePointer()?12:22)){
         ambientParticle(now);instance.lastAmbient=now;
       }
       for(let i=instance.particles.length-1;i>=0;i--){
@@ -396,7 +400,7 @@
     instance.impact=function(index,effect='standard',palette=null){
       const point=instance.cellCenter(index),m=instance.metrics;if(!point||!m)return;
       const colors=Array.isArray(palette)&&palette.length?palette:(EFFECT_COLORS[effect]||EFFECT_COLORS.standard);
-      const isCoarse=matchMedia('(pointer: coarse)').matches;
+      const isCoarse=coarsePointer();
       const count=isCoarse?15:24;
       const kind=effectKind(effect);
       instance.bursts.push({x:point.x,y:point.y,age:0,life:.72,maxRadius:Math.min(m.cellWidth,m.cellHeight)*(isCoarse?2.8:3.8),color:colors[0]});
@@ -431,7 +435,7 @@
     };
     instance.eliminate=function(index,effect='standard'){
       if(effect==='tombstone'){instance.impact(index,'tombstone',EFFECT_COLORS.dust);return;}
-      const mapped=effect==='freeze'?'ice':effect==='stone'?'pixel':effect==='rocket'?'fire':effect==='shadow'?'void':effect==='burst'?'lightning':effect==='flames'?'fire':effect;
+      const mapped=effect==='freeze'?'ice':effect==='rocket'?'fire':effect==='shadow'?'void':effect==='burst'?'lightning':effect==='flames'?'fire':effect;
       instance.impact(index,mapped,EFFECT_COLORS[mapped]||null);
     };
     instance.clearPlayerTrails=function(playerId){
