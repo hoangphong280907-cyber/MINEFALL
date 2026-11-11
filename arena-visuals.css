@@ -22,15 +22,16 @@
   z-index: 2;
   background: transparent !important;
 }
-.board-grid.arena-materialized .cell {
+/* Intentionally outrank the legacy per-arena cell gradients in index.html. */
+.board-wrap.arena-visual-active .board-grid.arena-materialized .cell {
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
 }
-.board-grid.arena-materialized .cell.selected {
+.board-wrap.arena-visual-active .board-grid.arena-materialized .cell.selected {
   box-shadow: inset 0 0 0 2px #ffe09a, 0 0 0 1px #ffc267dd, 0 0 12px #ffc26766 !important;
 }
-.board-grid.arena-materialized .cell:focus-visible {
+.board-wrap.arena-visual-active .board-grid.arena-materialized .cell:focus-visible {
   box-shadow: inset 0 0 0 2px var(--cyan) !important;
 }
 .board-grid.arena-materialized .cell.exploded {
