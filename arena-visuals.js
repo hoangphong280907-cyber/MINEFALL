@@ -314,6 +314,12 @@
       return grid.getBoundingClientRect().width>0&&grid.getBoundingClientRect().height>0;
     }
 
+    function addParticle(particle) {
+      const maximum=coarsePointer()?84:160;
+      if(instance.particles.length>=maximum)instance.particles.splice(0,instance.particles.length-maximum+1);
+      instance.particles.push(particle);
+    }
+
     function ambientParticle(now) {
       const m=instance.metrics;if(!m)return;
       const theme=resolveTheme(instance.theme);
@@ -326,7 +332,7 @@
       const particle=createParticle(x,y,(Math.random()-.5)*8, speed*(10+Math.random()*20),size,colors[Math.floor(Math.random()*colors.length)],3+Math.random()*4,kind==='snow'?'snow':kind==='bubble'?'bubble':kind==='spore'?'orb':kind==='star'?'star':kind==='petal'?'petal':kind==='spark'?'spark':kind==='ember'?'ember':'dust');
       particle.alpha=kind==='spark'?.42:.34;particle.gravity=kind==='ember'?-4:kind==='snow'?2:0;
       particle.rotation=Math.random()*Math.PI*2;particle.spin=(Math.random()-.5)*.7;
-      instance.particles.push(particle);
+      addParticle(particle);
     }
 
     function drawBurst(burst,ctx) {
@@ -417,10 +423,10 @@
         if(effect==='fire'){p.gravity=-28;p.life+=.25;}
         if(effect==='toxic'){p.vy=-Math.abs(p.vy)*.55;p.gravity=-8;}
         if(effect==='lightning'){p.life=.18+Math.random()*.13;p.size*=1.5;}
-        instance.particles.push(p);
+        addParticle(p);
       }
       if(effect==='fire'||effect==='standard'||effect==='plasma'){
-        for(let i=0;i<5;i++)instance.particles.push(createParticle(point.x+(Math.random()-.5)*10,point.y+(Math.random()-.5)*10,(Math.random()-.5)*14,-12-Math.random()*22,5+Math.random()*8,'rgba(70,65,65,.55)',.9+Math.random()*.55,'smoke'));
+        for(let i=0;i<5;i++)addParticle(createParticle(point.x+(Math.random()-.5)*10,point.y+(Math.random()-.5)*10,(Math.random()-.5)*14,-12-Math.random()*22,5+Math.random()*8,'rgba(70,65,65,.55)',.9+Math.random()*.55,'smoke'));
       }
       if(effect==='tombstone')instance.decals.push({type:'tombstone',x:point.x,y:point.y});
       start();
@@ -433,7 +439,7 @@
       for(let i=0;i<4;i++){
         const t=(i+1)/5,x=from&&to?mix(from.x,to.x,t):to.x,y=from&&to?mix(from.y,to.y,t):to.y;
         const p=createParticle(x+(Math.random()-.5)*3,y+(Math.random()-.5)*3,(Math.random()-.5)*12,-8-Math.random()*15,1.3+Math.random()*2,colors[i%colors.length],.42+Math.random()*.4,kind,playerId);
-        p.alpha=.78;p.gravity=kind==='ember'?-10:kind==='shard'?14:0;instance.particles.push(p);
+        p.alpha=.78;p.gravity=kind==='ember'?-10:kind==='shard'?14:0;addParticle(p);
       }
       start();
     };
