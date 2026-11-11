@@ -4,6 +4,10 @@
   const paletteFallback = ['#63e0d5', '#ffc267'];
   let socket = null;
   let connectPromise = null;
+  let reconnectTimer = null;
+  let reconnectAttempt = 0;
+  let resumePending = false;
+  let justResumedSession = false;
   let room = null;
   let selfPlayerId = null;
   let publicState = null;
@@ -30,6 +34,51 @@
   const ARENA_LABELS = Object.fromEntries((SHOP_CATALOG.arena || []).map(item => [item.id, item.title]));
   let lastRematchNoticeStamp = '';
   const CLIENT_ID_KEY = 'minefall.online.identity.v1';
+  const SESSION_KEY = 'minefall.online.resume.v1';
+  const RECONNECT_DELAYS = [500, 1000, 2000, 4000, 8000];
+
+  function readResumeSession() {
+    try {
+      const value = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+      if (!value || typeof value.resumeToken !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(value.resumeToken)) return null;
+      return { roomCode: String(value.roomCode || ''), playerId: String(value.playerId || ''), resumeToken: value.resumeToken };
+    } catch { return null; }
+  }
+  let resumeSession = readResumeSession();
+
+  function saveResumeSession(value) {
+    if (!value || typeof value.resumeToken !== 'string') return;
+    resumeSession = {
+      roomCode: String(value.roomCode || resumeSession?.roomCode || ''),
+      playerId: String(value.playerId || resumeSession?.playerId || ''),
+      resumeToken: value.resumeToken
+    };
+    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(resumeSession)); }
+    catch { showMessage('Không thể lưu phiên khôi phục trong tab này. Đừng đóng tab khi đang chơi.', true); }
+  }
+
+  function clearResumeSession() {
+    resumeSession = null;
+    resumePending = false;
+    justResumedSession = false;
+    reconnectAttempt = 0;
+    if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+    try { sessionStorage.removeItem(SESSION_KEY); } catch {}
+  }
+
+  function scheduleReconnect() {
+    if (!resumeSession || reconnectTimer) return;
+    const delay = RECONNECT_DELAYS[Math.min(reconnectAttempt, RECONNECT_DELAYS.length - 1)];
+    reconnectAttempt++;
+    setConnectionStatus('Đang thử kết nối lại…');
+    showMessage('Mất kết nối. Đang tự khôi phục phiên chơi…', true);
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null;
+      ensureConnected().then(connected => {
+        if (!connected && resumeSession) scheduleReconnect();
+      });
+    }, delay);
+  }
 
   function clearMessage() {
     if (localMessageTimer) { clearTimeout(localMessageTimer); localMessageTimer = null; }
@@ -151,6 +200,18 @@
       }, 8000);
       ws.addEventListener('open', () => {
         if (socket !== ws) return;
+        if (resumeSession) {
+          resumePending = true;
+          setConnectionStatus('Đang khôi phục phiên…');
+          try {
+            ws.send(JSON.stringify({ type: 'room:resume', payload: { resumeToken: resumeSession.resumeToken } }));
+            done(true);
+          } catch {
+            try { ws.close(); } catch {}
+            done(false);
+          }
+          return;
+        }
         setConnectionStatus('Đã kết nối', true);
         showMessage('Đã kết nối.');
         done(true);
@@ -165,8 +226,6 @@
       ws.addEventListener('error', () => {
         if (socket !== ws) return;
         setConnectionStatus('Không thể kết nối');
-        showMessage('Không kết nối được máy chủ. Thử lại sau.', true);
-        socket = null;
         try { ws.close(); } catch {}
         done(false);
       });
@@ -178,7 +237,10 @@
         connectPromise = null;
         setRoomRequestPending(false);
         setConnectionStatus('Mất kết nối');
-        if (hadRoom) {
+        if (resumeSession) {
+          if (hadRoom) activateScreen(window.MINEFALL_APP?.isOnlineMatch?.() ? 'gameScreen' : 'onlineRoomScreen');
+          scheduleReconnect();
+        } else if (hadRoom) {
           resetPregame(true);
           window.MINEFALL_APP?.resetOnlineGameToLobby();
           room = null; selfPlayerId = null; publicState = null; cursorMap.clear(); lastBoardSignature = '';
@@ -196,6 +258,19 @@
 
   function handleMessage(msg) {
     switch (msg.type) {
+      case 'room:session':
+        saveResumeSession(msg);
+        resumePending = false;
+        reconnectAttempt = 0;
+        if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+        setConnectionStatus('Đã kết nối', true);
+        if (msg.resumed) {
+          justResumedSession = true;
+          showMessage('Đã khôi phục kết nối. Trận đấu tiếp tục theo trạng thái máy chủ.');
+        } else {
+          justResumedSession = false;
+        }
+        break;
       case 'system:hello':
         showMessage('Đã kết nối.');
         break;
@@ -244,6 +319,20 @@
         }
         publicState = incomingState;
         cursorMap = new Map((msg.cursors || []).map(item => [item.playerId, item.index]));
+        if (justResumedSession && incomingState && (incomingState.started || incomingState.ended)) {
+          justResumedSession = false;
+          resetPregame(true);
+          introStage = 'done';
+          introMatchId = incomingState.matchId || null;
+          if (room?.status === 'playing') {
+            window.MINEFALL_APP?.applyOnlineSnapshot(incomingState, selfPlayerId, {
+              ...room,
+              config: { ...room.config, ...(msg.roomConfig || {}) }
+            });
+          }
+        } else if (justResumedSession && incomingState) {
+          justResumedSession = false;
+        }
         if (room?.status === 'playing') {
           if (introStage === 'idle' || newMatch) startPregameIfNeeded(true);
           else if (!introMatchId && publicState?.matchId) introMatchId = publicState.matchId;
@@ -284,10 +373,21 @@
         break;
       case 'server:error':
         if (roomRequestPending) setRoomRequestPending(false);
+        if (resumePending) {
+          clearResumeSession();
+          resetPregame(true);
+          window.MINEFALL_APP?.resetOnlineGameToLobby();
+          room = null; selfPlayerId = null; publicState = null; cursorMap.clear(); lastBoardSignature = '';
+          renderRoom();
+          activateScreen('onlineScreen');
+          showMessage(msg.error?.message || 'Không thể khôi phục phiên. Phòng có thể đã hết thời gian chờ.', true);
+          break;
+        }
         showMessage(msg.error?.message || 'Yêu cầu bị từ chối.', true);
         if (window.MINEFALL_APP?.isOnlineMatch?.()) window.MINEFALL_APP.onlineCommandRejected(msg.error?.message || 'Máy chủ từ chối hành động.');
         break;
       case 'room:left':
+        clearResumeSession();
         if (commandWatchdog) { clearTimeout(commandWatchdog); commandWatchdog = null; }
         resetPregame(true);
         setRoomRequestPending(false);
@@ -328,6 +428,7 @@
   function backHome() {
     if (commandWatchdog) { clearTimeout(commandWatchdog); commandWatchdog = null; }
     returnToHomeOnLeave = !!room;
+    clearResumeSession();
     resetPregame(true);
     window.MINEFALL_APP?.resetOnlineGameToLobby();
     if (room && connectedSocket()) send('room:leave');
