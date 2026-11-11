@@ -31,6 +31,8 @@ const PUBLIC_FILES = new Map([
   ['/engine.js', ['engine.js', 'text/javascript; charset=utf-8']],
   ['/cosmetics.js', ['cosmetics.js', 'text/javascript; charset=utf-8']],
   ['/online-client.js', ['online-client.js', 'text/javascript; charset=utf-8']],
+  ['/arena-visuals.js', ['arena-visuals.js', 'text/javascript; charset=utf-8']],
+  ['/arena-visuals.css', ['arena-visuals.css', 'text/css; charset=utf-8']],
   ['/online.css', ['online.css', 'text/css; charset=utf-8']]
 ]);
 
