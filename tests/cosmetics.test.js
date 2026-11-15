@@ -107,37 +107,60 @@ test('online room create uses the host equipped bomb and successful room updates
 
 test('each cosmetic category has distinct visual data and matching renderer hooks', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  const css = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const visuals = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'arena-visuals.css'), 'utf8');
+
   for (const category of ['flag','bomb','elimination','trail','celebration']) {
     const items = catalog[category];
-    assert.ok(items.every(item => item.effect && item.emoji), `${category} should define effect and icon`);
-    assert.equal(new Set(items.map(item => item.emoji)).size, items.length, `${category} icons should be visually distinct`);
+    assert.ok(items.every(item => item.effect && item.emoji), category + ' should define effect and icon');
+    assert.equal(new Set(items.map(item => item.emoji)).size, items.length, category + ' icons should be visually distinct');
   }
+
   for (const bomb of catalog.bomb) {
-    assert.ok(Array.isArray(bomb.palette) && bomb.palette.length >= 4, `${bomb.id} palette`);
-    assert.match(html, /burst\.className='board-burst fx-'\+effect\+' bomb-effect-'\+bomb\.id/, 'bomb renderer should select a unique effect class and skin ID');
-    assert.match(html, /detail\.className='burst-signature signature-'\+effect/);
-    assert.match(html, /const particleShape=\(\{fire:'flame',ice:'shard',toxic:'bubble',lightning:'bolt',void:'orb',pixel:'pixel',cosmic:'star',confetti:'confetti',plasma:'plasma',standard:'spark'\}\)\[effect\]/);
+    assert.ok(Array.isArray(bomb.palette) && bomb.palette.length >= 4, bomb.id + ' palette');
   }
-  assert.match(css, /\.board-burst\{/);
-  assert.match(css, /\.movement-trail\{/);
-  assert.match(css, /\.elimination-fx\{/);
-  assert.match(css, /\.confetti-piece\.celebration-symbol\{/);
-  assert.match(css, /--num-8/);
-  assert.match(css, /font-size:clamp\(12px,1\.35vw,20px\)/);
+  assert.equal(new Set(catalog.bomb.map(item => item.effect)).size, catalog.bomb.length, 'each bomb should use a distinct effect profile');
+  assert.equal(new Set(catalog.bomb.map(item => item.palette.join(','))).size, catalog.bomb.length, 'each bomb should use a distinct color signature');
+
+  assert.match(html, /function showExplosionBurst\(index,player=null\)/);
+  assert.match(html, /const bombId=state\.onlineMode\?\(state\.onlineBombSkin\|\|'bomb-standard'\):\(profile\.equipped\.bomb\|\|player\?\.bomb\|\|'bomb-standard'\)/);
+  assert.match(html, /const bomb=getShopItem\('bomb',bombId\)/);
+  assert.match(html, /arenaVisualInstance\?\.impact\(index,bomb\.effect\|\|'standard',bomb\.palette\|\|null\)/);
+  assert.match(visuals, /instance\.impact=function\(index,effect='standard',palette=null\)/);
+  assert.match(visuals, /const colors=Array\.isArray\(palette\)&&palette\.length\?palette:\(EFFECT_COLORS\[effect\]\|\|EFFECT_COLORS\.standard\)/);
+  assert.match(visuals, /const kind=effectKind\(effect\)/);
+  assert.match(css, /\.arena-surface-canvas/);
+  assert.match(css, /\.arena-fx-canvas/);
+  assert.match(css, /\.board-grid\.arena-materialized/);
 });
 
-
-test('equipped bomb skin is used for revealed mine sprites and each bomb has its own explosion signature', () => {
+test('equipped bomb skin is used for revealed mine sprites and each bomb has its own Canvas explosion signature', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const visuals = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
   assert.match(html, /const activeBombSkin=state\.onlineMode\?\(state\.onlineBombSkin\|\|'bomb-standard'\):\(profile\.equipped\.bomb\|\|'bomb-standard'\)/);
   assert.match(html, /mine-skin-'\+bombItem\.id/);
   assert.match(html, /width:clamp\(17px,1\.8vw,27px\);height:clamp\(17px,1\.8vw,27px\)/);
-  assert.match(html, /burst\.dataset\.bombSkin=bomb\.id/);
-  assert.match(html, /signatureCount=effect==='lightning'\?4:effect==='ice'\?6:effect==='void'\?2/);
-  assert.match(html, /mine-fallback/); // asset failure retains a visible emoji fallback
+  assert.match(html, /const bomb=getShopItem\('bomb',bombId\)/);
+  assert.match(html, /arenaVisualInstance\?\.impact\(index,bomb\.effect\|\|'standard',bomb\.palette\|\|null\)/);
+
+  const effectMap = visuals.match(/function effectKind\(effect\)\s*\{\s*const map=\{([^}]+)\}/);
+  assert.ok(effectMap, 'arena renderer should define effect-to-particle mappings');
   const effects = new Set(catalog.bomb.map(item => item.effect));
-  for (const effect of ['standard','fire','ice','toxic','lightning','void','pixel','cosmic','confetti','plasma']) assert.ok(effects.has(effect), `missing bomb effect ${effect}`);
-  for (const bomb of catalog.bomb) assert.ok(fs.existsSync(path.join(root, 'assets/mines', bomb.asset)), `missing bomb image ${bomb.asset}`);
-  for (const effect of effects) assert.match(html, new RegExp('signature-' + effect + '[{\\.]'), `missing signature CSS for ${effect}`);
+  for (const effect of ['standard','fire','ice','toxic','lightning','void','pixel','cosmic','confetti','plasma']) {
+    assert.ok(effects.has(effect), 'missing bomb effect ' + effect);
+    assert.match(effectMap[1], new RegExp('(?:^|,)' + effect + ":'[^']+'"), 'missing Canvas particle mapping for ' + effect);
+  }
+
+  assert.match(visuals, /if\(effect==='void'\)/);
+  assert.match(visuals, /if\(effect==='ice'\)/);
+  assert.match(visuals, /if\(effect==='fire'\)/);
+  assert.match(visuals, /if\(effect==='toxic'\)/);
+  assert.match(visuals, /if\(effect==='lightning'\)/);
+  assert.match(visuals, /function drawParticle\(ctx,p\)/);
+  assert.match(visuals, /p\.kind==='bolt'/);
+
+  for (const bomb of catalog.bomb) {
+    assert.ok(fs.existsSync(path.join(root, 'assets/mines', bomb.asset)), 'missing bomb image ' + bomb.asset);
+    assert.ok(Array.isArray(bomb.palette) && bomb.palette.length >= 4, 'missing palette for ' + bomb.id);
+  }
 });
