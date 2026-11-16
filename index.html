@@ -1508,7 +1508,7 @@ function scheduleBot(bot){
     if(move.type==='pass'){
       addLog(bot.name+' không còn ô hợp lệ và bỏ lượt.','important');state.turnBusy=false;advanceTurn(bot.id);return;
     }
-    addLog(bot.name+' ('+(bot.personality==='aggressive'?'liều lĩnh':bot.personality==='cautious'?'thận trọng':'linh hoạt')+') suy luận: '+move.reason,'normal');
+ 
     const path=findPathBFS(bot.pos,move.i);
     let step=0;path.forEach(index=>{const tile=boardGrid.children[index];if(tile)tile.classList.add('route-highlight');});
     const baseStepDelay=getMoveStepDelay(path.length);
@@ -1598,10 +1598,10 @@ function beginMatch(firstId){
   state.started=true;state.ended=false;state.currentId=firstId;state.turnId=1;state.turnLeft=TURN_SECONDS;state.matchLeft=matchDurationSeconds();state.selected=null;state.mobileBubblesOpen=false;state.turnBusy=false;
   $('boardSubtitle').textContent='Độ khó '+DIFFICULTY_CONFIG[state.difficulty].label;
   if($('boardTitle'))$('boardTitle').textContent='MINEFIELD / BOARD '+SIZE+'×'+SIZE;
-  addLog('Khoang đáp xuống. Cụm mở đầu '+(state.zone.size+state.clueRing.size)+' ô an toàn, liền mạch và có hình dạng ngẫu nhiên.','important');addLog('Roulette chọn '+playerById(firstId).name+' đi trước.','important');
+  // The board subtitle and roulette toast already communicate setup state.
   renderBoard();renderPawns();renderPlayers();renderActionPanel();startMatchTimer();startTurnTimer();
   if(!playerById(firstId).isHuman)scheduleBot(playerById(firstId));
-  else addLog('Lượt đầu: nhấp một ô chưa mở để di chuyển, rồi chọn Đào hoặc Cắm cờ. Mỗi lượt có 60 giây.','important');
+
 }
 function allMarkableCellsMarked(){return Engine.allMarkableCellsMarked(state.cells);}
 function applyMatchOutcome(reason){
