@@ -30,6 +30,7 @@ jobs:
         run: |
           node --check engine.js
           node --check cosmetics.js
+          node --check arena-visuals.js
           node --check online-client.js
           node --check server/index.js
           node --check server/room-manager.js
