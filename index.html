@@ -1076,7 +1076,7 @@ function showRevealWave(origin,indices){
 }
 function showExplosionBurst(index,player=null){
   const wrap=$('boardWrap');wrap.classList.remove('board-hit');void wrap.offsetWidth;wrap.classList.add('board-hit');
-  const bombId=state.onlineMode?(state.onlineBombSkin||'bomb-standard'):(player?.bomb||(player?.isHuman?profile.equipped.bomb:'bomb-standard')||'bomb-standard');
+  const bombId=player?.bomb||(player?.isHuman?profile.equipped.bomb:(state.onlineMode?state.onlineBombSkin:'bomb-standard'))||'bomb-standard';
   const bomb=getShopItem('bomb',bombId);
   arenaVisualInstance?.impact(index,bomb.effect||'standard',bomb.palette||null);
 }
@@ -1249,7 +1249,7 @@ function advanceTurn(fromId){
   if(!next){finishGame('everyone-eliminated');return;}
   state.currentId=next.id;state.turnId++;state.selected=null;state.mobileBubblesOpen=false;state.humanMoving=false;state.turnLeft=TURN_SECONDS;state.turnBusy=false;
   renderPlayers();renderPawns();renderBoard();renderActionPanel();startTurnTimer();
-  if(next.isHuman) addLog('Đến lượt bạn. Nhấp ô để di chuyển rồi đào hoặc cắm/gỡ cờ.','important');
+
   else {addLog('Đến lượt '+next.name+'.');scheduleBot(next);}
 }
 function startTurnTimer(){
@@ -1748,7 +1748,7 @@ function showResults(headline,reason){
   else if(reason==='survivor'){title='BẠN ĐÃ BỊ LOẠI';copy='Người sống sót cuối cùng giành hạng 1.';}
   else if(reason==='timeout'){title='HẾT '+state.matchDurationMinutes+' PHÚT';copy='Người còn sống xếp theo điểm cờ; đồng điểm cùng hạng.';}
   else if(reason==='everyone-eliminated'){title='KHÔNG CÒN AI SỐNG';copy='Người bị loại cuối cùng đứng đầu.';}
-  let table='<div class="results-wrap"><table class="results"><thead><tr><th>Hạng</th><th>Người chơi</th><th>Trạng thái</th><th>Cờ Đ/S</th><th>Hạng</th><th>Cờ</th><th>Phạt</th><th>Tổng</th></tr></thead><tbody>'; 
+  let table='<div class="results-wrap"><table class="results"><thead><tr><th>Vị trí</th><th>Người chơi</th><th>Trạng thái</th><th>Cờ Đ/S</th><th>Điểm hạng</th><th>Điểm cờ</th><th>Phạt</th><th>Tổng</th></tr></thead><tbody>'; 
   for(const player of ranked){
     const canScorePlayer=state.scored;
     const flagBreakdown=canScorePlayer?(player.correctFlags+' / '+player.wrongFlags):'—';
@@ -1762,7 +1762,7 @@ function showResults(headline,reason){
   const coinText=coinReward>0?('<b>+'+coinReward+' xu vàng</b>'):('Chưa đủ 10 điểm dương để nhận xu.');
   const firstButton=state.onlineMode?'ĐẤU LẠI':'CHƠI TRẬN MỚI';
   const secondButton=state.onlineMode?'VỀ SẢNH ONLINE':'VỀ TRANG CHỦ';
-  overlayPanel.innerHTML='<div class="overlay-kicker">TỔNG KẾT TRẬN</div><h2>'+title+'</h2>'+(copy?'<p>'+copy+'</p>':'')+'<div class="coin-reward-note">🪙 '+coinText+'<br><span>Số dư: '+profile.coins+' xu · 10 điểm dương = 1 xu</span></div>'+table+'<div class="summary-formula">Tổng điểm = Hạng + Cờ − Phạt.</div>'+(state.onlineMode?'<div id="rematchStatus" class="note rematch-status" role="status">Chờ xác nhận tái đấu · 0/2</div>':'')+'<div class="result-foot"><button id="againBtn" class="btn btn-primary">'+firstButton+'</button><button id="resultHomeBtn" class="btn">'+secondButton+'</button></div>';
+  overlayPanel.innerHTML='<div class="overlay-kicker">TỔNG KẾT TRẬN</div><h2>'+title+'</h2>'+(copy?'<p>'+copy+'</p>':'')+'<div class="coin-reward-note">🪙 '+coinText+'<br><span>Số dư: '+profile.coins+' xu · 10 điểm dương = 1 xu</span></div>'+table+'<div class="summary-formula">Tổng = Điểm hạng + Điểm cờ − Phạt.</div>'+(state.onlineMode?'<div id="rematchStatus" class="note rematch-status" role="status">Chờ xác nhận tái đấu · 0/2</div>':'')+'<div class="result-foot"><button id="againBtn" class="btn btn-primary">'+firstButton+'</button><button id="resultHomeBtn" class="btn">'+secondButton+'</button></div>';
   $('againBtn').addEventListener('click',()=>{if(state.onlineMode){window.MINEFALL_ONLINE?.requestRematch();}else startGame();});
   $('resultHomeBtn').addEventListener('click',()=>{if(state.onlineMode)window.MINEFALL_ONLINE?.returnToLobby();else goHome();});
   if(state.onlineMode)window.MINEFALL_APP?.updateOnlineRematchControls(window.MINEFALL_ONLINE?.getRematchStatus?.());
@@ -1831,7 +1831,7 @@ function onlineApplyActionVisual(action){
   else if((action.type==='flag'||action.type==='unflag')&&index!==null){renderBoard();renderPlayers();showCellFeedback(index,action.type,action.type==='flag'?'CẮM CỜ':'GỠ CỜ');addLog((player?.name||'Người chơi')+(action.type==='flag'?' cắm cờ tại ':' gỡ cờ tại ')+coord(index)+'.');}
   else if(action.type==='eliminated'&&index!==null){clearMovementTrailsForPlayer(action.playerId);const board=$('boardWrap');board.classList.remove('board-hit');void board.offsetWidth;board.classList.add('board-hit');renderBoard();renderPlayers();renderPawns();showExplosionBurst(index,player);showEliminationEffect(player,index);if(player){showEmote(player,'💥','BỊ LOẠI');toast((player.id===state.onlineSelfId?'💥 BẠN BỊ LOẠI':'💥 '+player.name+' BỊ LOẠI')+(player.place?' · HẠNG '+player.place:''));}addLog((player?.name||'Người chơi')+' đào trúng mìn tại '+coord(index)+' và bị loại.','death');}
   else if(action.type==='turn-timeout'){if(player)showEmote(player,'⌛','Hết giờ · −5 điểm');addLog((player?.name||'Người chơi')+' hết 60 giây. Đứng nguyên vị trí, phạt −5 điểm.','important');}
-  else if(action.type==='move'&&index!==null){addLog((player?.name||'Người chơi')+' di chuyển đến '+coord(index)+'.');}
+
 }
 function animateOnlineMovement(playerId,fromIndex,toIndex){
   const finishLocalMove=()=>{if(playerId!==state.onlineSelfId)return;state.humanMoving=false;state.onlinePendingMoveTarget=null;state.selected=Number.isInteger(toIndex)?toIndex:state.selected;state.mobileBubblesOpen=true;};
