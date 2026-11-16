@@ -2,6 +2,9 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
 const ArenaVisuals = require('../arena-visuals.js');
 
 test('arena renderer exposes all twelve selectable arena materials', () => {
@@ -33,4 +36,37 @@ test('renderer module can be imported in Node without a browser DOM', () => {
   assert.equal(typeof ArenaVisuals.mount, 'function');
   assert.equal(typeof ArenaVisuals.paintPreview, 'function');
   assert.equal(ArenaVisuals.version, '1.0.0');
+});
+
+test('Canvas effects provide layered bomb impacts, movement trails, eliminations and victory bursts', () => {
+  const source = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
+  assert.match(source, /instance\.impact=function\(index,effect='standard',palette=null\)/);
+  assert.match(source, /instance\.streaks\.push/);
+  assert.match(source, /function drawMotionStreak\(ctx,streak\)/);
+  assert.match(source, /instance\.eliminations\.push/);
+  assert.match(source, /function drawEliminationEcho\(ctx,mark\)/);
+  assert.match(source, /instance\.celebrate=function\(index,effect='confetti',palette=null,playerColor=null\)/);
+  assert.match(source, /function drawVictoryMark\(ctx,mark\)/);
+  assert.match(source, /burst\.age>=\(burst\.delay\|\|0\)\+burst\.life/);
+  assert.match(source, /instance\.streaks=\[\]/);
+  assert.match(source, /instance\.eliminations=\[\]/);
+  assert.match(source, /instance\.victories=\[\]/);
+});
+
+test('offline and online matches share the improved effects and compact results presentation', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'arena-visuals.css'), 'utf8');
+  assert.match(html, /const bombId=player\?\.bomb\|\|/);
+  assert.match(html, /arenaVisualInstance\?\.impact\(index,bomb\.effect\|\|'standard',bomb\.palette\|\|null\)/);
+  assert.match(html, /arenaVisualInstance\?\.eliminate\(index,item\.effect\|\|'standard',player\.color\|\|null\)/);
+  assert.match(html, /arenaVisualInstance\?\.celebrate\(winner\.pos,celebration\.effect,celebration\.palette\|\|null,winner\.color\|\|null\)/);
+  assert.match(html, /if\(state\.onlineMode\)applyServerMatchOutcome\(\);else applyMatchOutcome\(reason\)/);
+  assert.match(html, /if\(snapshot\.ended&&!state\.ended\).*finishGame\(snapshot\.endReason\|\|'timeout'\)/);
+  assert.match(html, /class="action-note sr-only" aria-live="polite"/);
+  assert.match(html, /<th>Vị trí<\/th>.*<th>Điểm hạng<\/th>.*<th>Điểm cờ<\/th>/);
+  assert.match(html, /Tổng = Điểm hạng \+ Điểm cờ − Phạt/);
+  assert.doesNotMatch(html, /di chuyển đến '\+coord\(index\)\+'\.'/);
+  assert.doesNotMatch(html, /addLog\('Lượt '\+\(event\.turnId/);
+  assert.match(css, /\.sr-only\s*\{/);
+  assert.match(css, /\.summary-formula\s*\{/);
 });
