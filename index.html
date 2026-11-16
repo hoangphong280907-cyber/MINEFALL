@@ -1250,7 +1250,7 @@ function advanceTurn(fromId){
   state.currentId=next.id;state.turnId++;state.selected=null;state.mobileBubblesOpen=false;state.humanMoving=false;state.turnLeft=TURN_SECONDS;state.turnBusy=false;
   renderPlayers();renderPawns();renderBoard();renderActionPanel();startTurnTimer();
 
-  else {addLog('Đến lượt '+next.name+'.');scheduleBot(next);}
+  else {scheduleBot(next);}
 }
 function startTurnTimer(){
   if(state.onlineMode||state.ended||!state.started) return;
@@ -1924,7 +1924,7 @@ function applyOnlineSnapshot(snapshot,selfPlayerId,roomInfo){
   if(freshMove)state.onlineVisualPositions.set(action.playerId,moveFrom);
   if(isNewOnlineMatch||boardGrid.children.length!==CELL_COUNT){clearMovementPathVisuals();buildBoard();}else renderBoard();
   renderPawns();renderPlayers();renderLog();renderActionPanel();
-  $('boardSubtitle').textContent='Cụm mở '+(state.zone.size+state.clueRing.size)+' ô · '+SIZE+'×'+SIZE+' · '+MINE_COUNT+' mìn';
+  $('boardSubtitle').textContent='Độ khó '+DIFFICULTY_CONFIG[state.difficulty].label;
   updateOnlineClockDisplay(snapshot);
   if(action&&actionStamp!==state.onlineLatestActionStamp){
     const current=playerById(action.playerId);
@@ -1933,7 +1933,7 @@ function applyOnlineSnapshot(snapshot,selfPlayerId,roomInfo){
     onlineApplyActionVisual(action);
   }
   const event=snapshot.lastEvent;const eventStamp=event?[event.type,event.at||'',event.playerId||'',event.index??'',event.turnId??''].join(':'):'';
-  if(event&&eventStamp!==state.onlineLatestEventStamp){state.onlineLatestEventStamp=eventStamp;if(event.type==='turn-started'){const active=playerById(event.playerId);addLog('Lượt '+(event.turnId||state.turnId)+': '+(active?.name||'Người chơi')+' đang đi.','important');}else if(event.type==='turn-timeout'&&!action){onlineApplyActionVisual(event);}}
+  if(event&&eventStamp!==state.onlineLatestEventStamp){state.onlineLatestEventStamp=eventStamp;if(event.type==='turn-timeout'&&!action)onlineApplyActionVisual(event);}
   if(snapshot.ended&&!state.ended){state.started=false;state.onlineResults=snapshot.results||state.onlineResults;state.onlineScoreNote=snapshot.scoreNote||state.onlineScoreNote;finishGame(snapshot.endReason||'timeout');}
   if(state.ended&&snapshot.ended&&state.endRevealComplete===false&&state.revealingEnd===false){/* local reveal animation is already running */}
 }
