@@ -398,25 +398,24 @@ body.online-session-active .top-right { gap: 0; }
   </main>
 
   <main id="gameScreen" class="screen">
-    <div class="game-head"><div><div class="eyebrow">MINEFALL / MATCH</div><h1>Bàn cờ <span id="gameBoardSize" style="color:var(--cyan)">16×16</span></h1><div class="game-sub" id="gameSub">Nhấp vào một ô để di chuyển. Đào hoặc cắm/gỡ cờ mới kết thúc lượt · 60 giây/lượt.</div></div><div class="game-head-actions"><button id="helpBtn" class="btn btn-small" title="Mở hướng dẫn và luật chơi">? Hướng dẫn</button><button id="restartBtn" class="btn btn-small">Chơi lại</button><button id="quitBtn" class="btn btn-danger btn-small">Thoát trận</button></div></div>
+    <div class="game-head"><div><div class="eyebrow">MINEFALL / MATCH</div><h1>Bàn cờ <span id="gameBoardSize" style="color:var(--cyan)">16×16</span></h1><div class="game-sub" id="gameSub">Di chuyển tự do · Đào/Cắm cờ kết thúc lượt · 60 giây/lượt.</div></div><div class="game-head-actions"><button id="helpBtn" class="btn btn-small" title="Mở hướng dẫn và luật chơi">? Hướng dẫn</button><button id="restartBtn" class="btn btn-small">Chơi lại</button><button id="quitBtn" class="btn btn-danger btn-small">Thoát trận</button></div></div>
     <div class="game-layout">
       <aside class="stack left-stack">
-        <section class="panel side-card"><div class="card-title"><span>Đồng hồ trận</span><span id="matchDurationBadge">10 MIN</span></div><div id="matchTimer" class="time">10:00</div><div class="time-caption">Trận kết thúc sớm nếu chỉ còn một người sống.</div><div class="progress"><div id="matchFill"></div></div></section>
+        <section class="panel side-card"><div class="card-title"><span>Đồng hồ trận</span><span id="matchDurationBadge">10 MIN</span></div><div id="matchTimer" class="time">10:00</div><div class="progress"><div id="matchFill"></div></div></section>
         <section class="panel side-card"><div class="card-title"><span>Người chơi</span><span id="aliveCount">—</span></div><div id="playersList" class="players"></div></section>
-        <section class="panel side-card"><div class="card-title"><span>Điểm cờ cuối trận</span><span id="scoreGateTag" class="score-gate">CHƯA XÉT</span></div><div class="guide-line"><span>Cờ đúng</span><b class="plus">+1 điểm</b></div><div class="guide-line"><span>Cờ sai</span><b class="minus">−1 điểm</b></div><div id="scoreRuleNote" class="warning">Cờ đúng +1 · cờ sai −1 · tính cả người đã bị loại.</div></section>
+        <section class="panel side-card"><div class="card-title"><span>Điểm cờ</span><span id="scoreGateTag" class="score-gate">CHƯA XÉT</span></div><div class="guide-line"><span>Cờ đúng</span><b class="plus">+1 điểm</b></div><div class="guide-line"><span>Cờ sai</span><b class="minus">−1 điểm</b></div><div id="scoreRuleNote" class="warning">Cờ đúng +1 · Cờ sai −1 · kể cả người đã bị loại.</div></section>
       </aside>
 
       <section class="panel board-card">
         <div class="board-top"><div class="board-heading-copy"><div class="board-title" id="boardTitle">MINEFIELD / BOARD 16×16</div><div id="boardSubtitle" class="board-subtitle">Đang khởi tạo...</div><div id="currentCellClue" class="current-cell-clue" role="status" aria-live="polite">Ô dưới chân: chưa có manh mối</div></div><div class="board-stats"><span class="micro">Ô <b id="tileCount">256</b></span><span class="micro">CỜ <b id="flagCount">0</b></span><span class="micro">MÌN <b id="boardMineValue">128</b></span></div></div>
         <div id="boardWrap" class="board-wrap"><div id="boardGrid" class="board-grid" role="grid" aria-label="Bàn cờ 16 nhân 16"></div><div id="pawnLayer" class="pawn-layer" aria-hidden="true"></div><div id="mobileActionBubbles" class="mobile-action-bubbles" aria-label="Hành động nhanh"><button id="mobileBubbleClose" class="mobile-bubble-close" aria-label="Đóng hành động nhanh" title="Đóng">×</button><div id="mobileActionTarget" class="mobile-action-target">Chọn ô mục tiêu</div><div class="mobile-action-row"><button id="mobileDigBtn" class="mobile-bubble-action dig" disabled><span class="bubble-icon">⛏️</span><span class="bubble-label">ĐÀO</span></button><button id="mobileFlagBtn" class="mobile-bubble-action flag" disabled><span id="mobileFlagIcon" class="bubble-icon">⚑</span><span id="mobileFlagLabel" class="bubble-label">CẮM CỜ</span></button></div></div></div>
-        <div class="board-foot"><span><b>Di chuyển:</b> nhấp bất kỳ ô nào trên bản đồ trong lượt của bạn.</span><span class="keys"><span class="key">D</span> Đào &nbsp; <span class="key">F</span> Cờ</span></div>
-        <div class="emote-picker" aria-label="Biểu cảm nhanh"><span class="emote-picker-label">Biểu cảm nhanh · không tốn lượt</span><button type="button" class="emote-btn" data-emote="🤔" data-caption="Đang suy nghĩ" title="Đang suy nghĩ" aria-label="Đang suy nghĩ">🤔</button><button type="button" class="emote-btn" data-emote="😎" data-caption="Tự tin" title="Tự tin" aria-label="Tự tin">😎</button><button type="button" class="emote-btn" data-emote="😱" data-caption="Hoảng sợ" title="Hoảng sợ" aria-label="Hoảng sợ">😱</button><button type="button" class="emote-btn" data-emote="😈" data-caption="Khiêu khích" title="Khiêu khích" aria-label="Khiêu khích">😈</button><button type="button" class="emote-btn" data-emote="👍" data-caption="Tán thưởng" title="Tán thưởng" aria-label="Tán thưởng">👍</button></div>
+        <div class="board-foot"><span>Nhấp ô để di chuyển.</span><span class="keys"><span class="key">D</span> Đào &nbsp; <span class="key">F</span> Cờ</span></div>
+        <div class="emote-picker" aria-label="Biểu cảm"><span class="emote-picker-label">Biểu cảm</span><button type="button" class="emote-btn" data-emote="🤔" data-caption="Đang suy nghĩ" title="Đang suy nghĩ" aria-label="Đang suy nghĩ">🤔</button><button type="button" class="emote-btn" data-emote="😎" data-caption="Tự tin" title="Tự tin" aria-label="Tự tin">😎</button><button type="button" class="emote-btn" data-emote="😱" data-caption="Hoảng sợ" title="Hoảng sợ" aria-label="Hoảng sợ">😱</button><button type="button" class="emote-btn" data-emote="😈" data-caption="Khiêu khích" title="Khiêu khích" aria-label="Khiêu khích">😈</button><button type="button" class="emote-btn" data-emote="👍" data-caption="Tán thưởng" title="Tán thưởng" aria-label="Tán thưởng">👍</button></div>
       </section>
 
       <aside class="stack right-stack">
-        <section class="panel side-card current-panel"><div class="card-title"><span>Lượt hiện tại</span><span id="phaseTag" class="turn-pill"><i class="turn-dot"></i>CHỜ</span></div><div id="currentPlayerName" style="font-size:11px;font-weight:950;color:#b9c9d2">ĐANG CHỜ</div><div id="turnClock" class="turn-clock">60 GIÂY / LƯỢT</div><div id="targetCoord" class="target-coord">—</div><div id="targetInfo" class="target-info">Chờ roulette chọn người đi đầu.</div><div class="action-buttons"><button id="digBtn" class="action-btn dig" disabled><span class="action-icon">⌁</span><span>ĐÀO Ô</span></button><button id="flagBtn" class="action-btn flag" disabled><span class="action-icon">⚑</span><span id="flagBtnLabel">CẮM CỜ</span></button></div><div id="actionNote" class="action-note">Khi đến lượt, nhấp ô chưa mở rồi chọn hành động. Bạn có 60 giây.</div></section>
+        <section class="panel side-card current-panel"><div class="card-title"><span>Lượt hiện tại</span><span id="phaseTag" class="turn-pill"><i class="turn-dot"></i>CHỜ</span></div><div id="currentPlayerName" style="font-size:11px;font-weight:950;color:#b9c9d2">ĐANG CHỜ</div><div id="turnClock" class="turn-clock">60 GIÂY / LƯỢT</div><div id="targetCoord" class="target-coord">—</div><div id="targetInfo" class="target-info">Chờ lượt đầu.</div><div class="action-buttons"><button id="digBtn" class="action-btn dig" disabled><span class="action-icon">⌁</span><span>ĐÀO Ô</span></button><button id="flagBtn" class="action-btn flag" disabled><span class="action-icon">⚑</span><span id="flagBtnLabel">CẮM CỜ</span></button></div><div id="actionNote" class="action-note sr-only" aria-live="polite"></div></section>
         <section class="panel side-card"><div class="card-title"><span>Nhật ký sự kiện</span><span id="logCount">00</span></div><div id="eventLog" class="log"></div></section>
-        <section class="panel side-card"><div class="card-title"><span>Thông tin trận</span></div><div class="warning">Di chuyển tự do · Đào/cắm cờ kết thúc lượt · Trúng mìn bị loại.</div></section>
       </aside>
     </div>
     <div class="footer" id="gameFooter">MINEFALL · SURVIVE THE MINEFIELD</div>
@@ -1077,8 +1076,7 @@ function showRevealWave(origin,indices){
 }
 function showExplosionBurst(index,player=null){
   const wrap=$('boardWrap');wrap.classList.remove('board-hit');void wrap.offsetWidth;wrap.classList.add('board-hit');
-  // Render a physical particle burst on the shared arena canvas instead of stacking emoji DOM nodes.
-  const bombId=state.onlineMode?(state.onlineBombSkin||'bomb-standard'):(profile.equipped.bomb||player?.bomb||'bomb-standard');
+  const bombId=state.onlineMode?(state.onlineBombSkin||'bomb-standard'):(player?.bomb||(player?.isHuman?profile.equipped.bomb:'bomb-standard')||'bomb-standard');
   const bomb=getShopItem('bomb',bombId);
   arenaVisualInstance?.impact(index,bomb.effect||'standard',bomb.palette||null);
 }
@@ -1099,8 +1097,7 @@ function showEliminationEffect(player,index){
   if(!player||!Number.isInteger(index))return;
   clearMovementTrailsForPlayer(player.id);
   const item=getShopItem('elimination',player.elimination||(player.isHuman?profile.equipped.elimination:'elim-standard')||'elim-standard');
-  // The effect is rendered as moving geometry and particles, never as a single emoji glyph.
-  arenaVisualInstance?.eliminate(index,item.effect||'standard');
+  arenaVisualInstance?.eliminate(index,item.effect||'standard',player.color||null);
 }
 
 function getMoveStepDelay(pathLength){
@@ -1145,19 +1142,19 @@ function renderActionPanel(){
   const target=state.selected===null?null:state.cells[state.selected];
   $('targetCoord').textContent=target?coord(target.i):'—';
   let info='';
-  if(state.ended) info='Trận đã kết thúc. Xem bảng tổng kết.';
-  else if(!state.started) info='Chờ roulette chọn người đi đầu.';
-  else if(!player) info='Không có người chơi đang hoạt động.';
-  else if(state.onlineMode&&!myTurn) info='Đang chờ '+player.name+' hành động. Bạn có thể quan sát toàn bộ ván đấu.';
-  else if(state.onlineMode&&!player.alive) info='Bạn đã bị loại. Hãy tiếp tục theo dõi trận và chờ kết quả cuối cùng.';
-  else if(!state.onlineMode&&!player.isHuman){const secs=state.botThinkingEndsAt?Math.max(0,Math.ceil((state.botThinkingEndsAt-Date.now())/1000)):null;info=state.botThinkingEndsAt?player.name+' đang suy nghĩ... còn khoảng '+secs+' giây.':player.name+' đang xử lý nước đi.';}
-  else if(state.humanMoving) info='Đang di chuyển theo đường đi ngắn nhất đến '+coord(state.selected)+'. Chờ nhân vật tới nơi để chọn hành động.';
-  else if(state.turnBusy) info='Đang xử lý hành động. Chờ máy chủ xác nhận.';
-  else if(!target) info='Nhấp vào một ô trên bản đồ để di chuyển đến đó.';
-  else if(target.zone) info='Ô xuất phát trong bãi đáp · an toàn · không thể đào hoặc cắm cờ.';
-  else if(target.revealed) info='Ô '+coord(target.i)+' đã mở. Hãy chọn ô chưa mở.';
-  else if(target.flagOwner) info=target.flagOwner===player.id?'Bạn đã đặt cờ ở ô này và có thể gỡ.':'Ô đang có cờ của '+(playerById(target.flagOwner)?.name||'người chơi')+'. Đấu cờ tiêu chuẩn không cho phép gỡ cờ đối thủ; tính năng này dành cho chế độ Hỗn loạn.';
-  else info='Đang ở '+coord(target.i)+'. Chọn Đào hoặc Cắm cờ để kết thúc lượt.';
+  if(state.ended) info='Đã kết thúc.';
+  else if(!state.started) info='Chờ lượt đầu.';
+  else if(!player) info='Không có lượt.';
+  else if(state.onlineMode&&!player.alive) info='Bạn đã bị loại. Đang quan sát.';
+  else if(state.onlineMode&&!myTurn) info='Đến lượt '+player.name+'.';
+  else if(!state.onlineMode&&!player.isHuman){const secs=state.botThinkingEndsAt?Math.max(0,Math.ceil((state.botThinkingEndsAt-Date.now())/1000)):null;info=state.botThinkingEndsAt?player.name+' đang nghĩ... '+secs+'s.':player.name+' đang đi.';}
+  else if(state.humanMoving) info='Đang di chuyển tới '+coord(state.selected)+'.';
+  else if(state.turnBusy) info='Đang xác nhận hành động.';
+  else if(!target) info='Chọn ô để di chuyển.';
+  else if(target.zone) info='Bãi đáp an toàn. Không thể đào hoặc cắm cờ.';
+  else if(target.revealed) info='Ô đã mở. Chọn ô chưa mở.';
+  else if(target.flagOwner) info=target.flagOwner===player.id?'Cờ của bạn. Có thể gỡ.':'Ô đang có cờ của đối thủ.';
+  else info='Tại '+coord(target.i)+'. Chọn Đào hoặc Cắm cờ.';
   $('targetInfo').textContent=info;
   const canTarget=!!(isHumanTurn&&target&&!target.zone&&!target.revealed&&!state.onlinePendingMoveTarget&&!state.onlinePendingAction);
   $('digBtn').disabled=!canTarget||!!(target&&target.flagOwner);
@@ -1180,7 +1177,7 @@ function renderActionPanel(){
 function renderPlayers(){
   const list=$('playersList');list.replaceChildren();const alive=alivePlayers();$('aliveCount').textContent=alive.length+' / '+state.players.length+' SỐNG';
   const scoreTag=$('scoreGateTag');if(scoreTag){scoreTag.textContent=state.scored?'ĐÃ XÉT':state.ended?'BỎ QUA':'CHƯA XÉT';scoreTag.className='score-gate'+(state.scored?' evaluated':state.ended?' skipped':'');}
-  const scoreRule=$('scoreRuleNote');if(scoreRule){scoreRule.textContent=state.ended?(state.scored?state.scoreNote:'Điểm cờ đúng/sai được tính cho mọi người chơi, kể cả người đã bị loại.'):'Tổng điểm ván = điểm hạng + điểm cờ − phạt bỏ lượt. Cờ đúng +1, cờ sai −1; mọi lá cờ còn trên bàn được tính cho chủ cờ, kể cả người đã bị loại.';}
+  const scoreRule=$('scoreRuleNote');if(scoreRule){scoreRule.textContent=state.ended?(state.scored?'Cờ còn trên bàn vẫn được tính cho chủ cờ.':'Điểm cờ không được tính.'):'Cờ đúng +1 · Cờ sai −1 · kể cả người đã bị loại.';}
   for(const player of state.players){
     const row=document.createElement('div');row.className='player'+(player.id===state.currentId&&!state.ended?' current':'')+(!player.alive?' dead':'');
     const avatar=document.createElement('div');avatar.className='avatar';avatar.style.background=player.color;avatar.textContent=state.onlineMode?getShopItem('avatar',player.avatar||'avatar-cadet').emoji:(player.isHuman?getShopItem('avatar',profile.equipped.avatar).emoji:player.name.replace('BOT ','').slice(0,2));if(player.isHuman||state.onlineMode)avatar.style.fontSize='18px';const cross=document.createElement('span');cross.className='cross';cross.textContent='×';avatar.appendChild(cross);
@@ -1599,7 +1596,7 @@ function showRouletteOverlay(){
 }
 function beginMatch(firstId){
   state.started=true;state.ended=false;state.currentId=firstId;state.turnId=1;state.turnLeft=TURN_SECONDS;state.matchLeft=matchDurationSeconds();state.selected=null;state.mobileBubblesOpen=false;state.turnBusy=false;
-  $('boardSubtitle').textContent='Cụm mở '+(state.zone.size+state.clueRing.size)+' ô ngẫu nhiên · '+SIZE+'×'+SIZE+' · '+MINE_COUNT+' mìn · '+DIFFICULTY_CONFIG[state.difficulty].label;
+  $('boardSubtitle').textContent='Độ khó '+DIFFICULTY_CONFIG[state.difficulty].label;
   if($('boardTitle'))$('boardTitle').textContent='MINEFIELD / BOARD '+SIZE+'×'+SIZE;
   addLog('Khoang đáp xuống. Cụm mở đầu '+(state.zone.size+state.clueRing.size)+' ô an toàn, liền mạch và có hình dạng ngẫu nhiên.','important');addLog('Roulette chọn '+playerById(firstId).name+' đi trước.','important');
   renderBoard();renderPawns();renderPlayers();renderActionPanel();startMatchTimer();startTurnTimer();
@@ -1622,19 +1619,16 @@ function applyMatchOutcome(reason){
     player.place=update.place;player.rankPoints=update.rankPoints;player.correctFlags=update.correctFlags;player.wrongFlags=update.wrongFlags;
     player.flagScore=update.flagScore;player.skipPenalty=update.skipPenalty;player.score=update.totalScore;player.scoreBreakdown=update.scoreBreakdown;
   }
-  addLog(state.scoreNote,'important');
-  addLog('Tổng điểm đã tính bởi game engine v'+Engine.ENGINE_VERSION+': điểm hạng + điểm cờ − phạt bỏ lượt.','important');
   return result;
 }
 function createEndSequenceFx(reason,winner){
   const fx=$('endSequenceFx');fx.replaceChildren();fx.className='end-sequence-fx';
   const celebrating=!!winner;const celebration=celebrating?getShopItem('celebration',winner.celebration||(winner.isHuman?profile.equipped.celebration:'celebration-confetti')||'celebration-confetti'):null;
-  if(celebration)fx.classList.add('celebration-'+celebration.effect);
+  if(celebration){fx.classList.add('celebration-'+celebration.effect);arenaVisualInstance?.celebrate(winner.pos,celebration.effect,celebration.palette||null,winner.color||null);}
   const banner=document.createElement('div');banner.className='end-sequence-banner'+(celebrating?' victory':'');
-  const kicker=document.createElement('div');kicker.className='kicker';kicker.textContent=celebrating?'VICTORY':'FINAL MINE REVEAL';
-  const title=document.createElement('strong');title.textContent=celebrating?'👑 '+celebration.emoji+' '+winner.name+' CHIẾN THẮNG':'TIẾT LỘ VỊ TRÍ MÌN';
-  const sub=document.createElement('div');sub.className='sub';sub.textContent=celebrating?celebration.title:'Cờ sai sẽ bật khỏi ô và để lại dấu X';
-  banner.append(kicker,title,sub);fx.appendChild(banner);
+  const kicker=document.createElement('div');kicker.className='kicker';kicker.textContent=celebrating?'CHIẾN THẮNG':'TIẾT LỘ MÌN';
+  const title=document.createElement('strong');title.textContent=celebrating?'👑 '+winner.name:'MỞ TOÀN BỘ BẢN ĐỒ';
+  banner.append(kicker,title);fx.appendChild(banner);
   if(celebrating){
     const colors=celebration.palette||['#ffd34e','#63e0d5','#ff687b','#a78bfa','#f8fbff','#82e6a7','#ffa65b'];
     for(let i=0;i<64;i++){
@@ -1677,7 +1671,7 @@ function revealEndTile(i){
   }
 }
 function runEndRevealAnimation(reason,headline){
-  const token=state.matchToken;const winner=reason==='everyone-eliminated'?null:(state.players.find(player=>player.place===1)||(reason==='survivor'?alivePlayers()[0]:null));
+  const token=state.matchToken;const winner=state.players.find(player=>player.place===1)||(reason==='survivor'?alivePlayers()[0]:null);
   state.revealingEnd=true;state.endRevealComplete=false;
   createEndSequenceFx(reason,winner);renderPawns();renderPlayers();renderActionPanel();
   const queue=state.cells.filter(cell=>!cell.exploded&&!cell.revealed&&!cell.zone).map(cell=>cell.i);
@@ -1698,7 +1692,7 @@ function runEndRevealAnimation(reason,headline){
     $('endSequenceFx').className='end-sequence-fx hidden';$('endSequenceFx').replaceChildren();
     const player=playerById(HUMAN_ID);
     const finalHeadline=reason==='survivor'?'NGƯỜI SỐNG SÓT CUỐI CÙNG':reason==='everyone-eliminated'?'KHÔNG CÒN AI SỐNG':'HẾT '+state.matchDurationMinutes+' PHÚT';
-    addLog('Tiết lộ mìn hoàn tất. Bắt đầu tổng kết trận.','important');showResults(finalHeadline,reason);
+    addLog('Đã mở toàn bộ bản đồ.','important');showResults(finalHeadline,reason);
   },6600);
   state.endRevealTimers.push(finalizeTimer);
 }
@@ -1708,7 +1702,6 @@ function applyServerMatchOutcome(){
   state.scored=true;
   state.scoreNote=state.onlineScoreNote||'Điểm cờ đúng +1, cờ sai −1 được tính cho tất cả người chơi, kể cả người đã bị loại.';
   for(const update of results.players){const player=playerById(update.id);if(!player)continue;player.place=update.place;player.rankPoints=update.rankPoints;player.correctFlags=update.correctFlags;player.wrongFlags=update.wrongFlags;player.flagScore=update.flagScore;player.skipPenalty=update.skipPenalty;player.score=update.totalScore;player.scoreBreakdown=update.scoreBreakdown;}
-  addLog(state.scoreNote,'important');
 }
 function finishGame(reason){
   if(state.ended)return;
@@ -1718,7 +1711,7 @@ function finishGame(reason){
   renderBoard();renderPawns();renderPlayers();renderActionPanel();
   $('matchTimer').textContent=fmtTime(state.matchLeft);$('matchFill').style.width=(state.matchLeft/matchDurationSeconds()*100)+'%';
   const headline=reason==='survivor'?'NGƯỜI SỐNG SÓT CUỐI CÙNG':reason==='everyone-eliminated'?'KHÔNG CÒN AI SỐNG':'HẾT '+state.matchDurationMinutes+' PHÚT';
-  addLog('Trận kết thúc: '+headline+'. Bắt đầu hoạt ảnh tiết lộ mìn.','important');
+  addLog('Kết thúc: '+headline+'.','important');
   runEndRevealAnimation(reason,headline);
 }
 function updateMatchTimer(){
@@ -1749,13 +1742,13 @@ function showResults(headline,reason){
   const coinReward=grantCoinsForMatch();
   overlay.classList.remove('hidden');
   const ranked=[...state.players].sort((a,b)=>a.place-b.place||b.score-a.score);
-  let title='TRẬN ĐẤU KẾT THÚC',copy='Toàn bộ vị trí mìn đã được tiết lộ.';
+  let title='TRẬN KẾT THÚC',copy='';
   const human=playerById(state.onlineMode?state.onlineSelfId:HUMAN_ID);
-  if(human&&human.place===1){title='BẠN ĐẠT HẠNG 1';copy='Bạn đứng đầu bảng xếp hạng của trận này.';}
-  else if(reason==='survivor'){title='BẠN ĐÃ BỊ LOẠI';copy='Người sống sót cuối cùng giành hạng 1. Hạng của người bị loại được xác định theo thứ tự bị loại.';}
-  else if(reason==='timeout'){title='HẾT '+state.matchDurationMinutes+' PHÚT';copy='Người còn sống được xếp theo điểm cờ. Nếu đồng điểm, người chơi cùng chia sẻ thứ hạng.';}
-  else if(reason==='everyone-eliminated'){title='KHÔNG CÒN AI SỐNG';copy='Người bị loại cuối cùng đứng đầu bảng xếp hạng.';}
-  let table='<div class="results-wrap"><table class="results"><thead><tr><th>Hạng</th><th>Người chơi</th><th>Trạng thái</th><th>Cờ đúng / sai</th><th>Điểm hạng</th><th>Điểm cờ</th><th>Phạt bỏ lượt</th><th>Tổng điểm ván</th></tr></thead><tbody>'; 
+  if(human&&human.place===1){title='BẠN ĐẠT HẠNG 1';}
+  else if(reason==='survivor'){title='BẠN ĐÃ BỊ LOẠI';copy='Người sống sót cuối cùng giành hạng 1.';}
+  else if(reason==='timeout'){title='HẾT '+state.matchDurationMinutes+' PHÚT';copy='Người còn sống xếp theo điểm cờ; đồng điểm cùng hạng.';}
+  else if(reason==='everyone-eliminated'){title='KHÔNG CÒN AI SỐNG';copy='Người bị loại cuối cùng đứng đầu.';}
+  let table='<div class="results-wrap"><table class="results"><thead><tr><th>Hạng</th><th>Người chơi</th><th>Trạng thái</th><th>Cờ Đ/S</th><th>Hạng</th><th>Cờ</th><th>Phạt</th><th>Tổng</th></tr></thead><tbody>'; 
   for(const player of ranked){
     const canScorePlayer=state.scored;
     const flagBreakdown=canScorePlayer?(player.correctFlags+' / '+player.wrongFlags):'—';
@@ -1766,10 +1759,10 @@ function showResults(headline,reason){
     table+='<tr><td><span class="place">'+player.place+'</span></td><td><div class="result-name"><span class="tiny" style="background:'+player.color+'"></span>'+escapeHtml(player.name)+(player.place===1?' ★':'')+'</div></td><td style="color:'+(player.alive?'var(--green)':'#85949c')+'">'+(player.alive?'Sống':'Đã loại')+'</td><td>'+flagBreakdown+'</td><td class="score-positive">'+rankPoints+'</td><td>'+flagPoints+'</td><td class="score-negative">'+skipText+'</td><td style="font-weight:950;color:'+(player.score>0?'var(--green)':player.score<0?'var(--red)':'var(--text)')+'">'+scoreText+'</td></tr>'; 
   }
   table+='</tbody></table></div>';
-  const coinText=coinReward>0?('Bạn nhận được <b>+'+coinReward+' 🪙 xu vàng</b> từ '+Math.max(0,Math.floor((playerById(state.onlineMode?state.onlineSelfId:HUMAN_ID)?.score||0)))+' điểm.'):('Ván này không nhận thêm xu vàng vì tổng điểm không đạt 10 điểm dương.');
+  const coinText=coinReward>0?('<b>+'+coinReward+' xu vàng</b>'):('Chưa đủ 10 điểm dương để nhận xu.');
   const firstButton=state.onlineMode?'ĐẤU LẠI':'CHƠI TRẬN MỚI';
   const secondButton=state.onlineMode?'VỀ SẢNH ONLINE':'VỀ TRANG CHỦ';
-  overlayPanel.innerHTML='<div class="overlay-kicker">MATCH SUMMARY / END OF SESSION</div><h2>'+title+'</h2><p>'+copy+'</p><div class="coin-reward-note">🪙 '+coinText+'<br><span>Số dư hiện tại: '+profile.coins+' xu vàng · 10 điểm dương = 1 xu</span></div>'+table+'<div class="note" style="text-align:left">'+headline+' · Điểm cuối = điểm hạng + điểm cờ − phạt bỏ lượt.</div>'+(state.onlineMode?'<div id="rematchStatus" class="note rematch-status" role="status">Nhấn ĐẤU LẠI để mời đối thủ tái đấu · 0/2</div>':'')+'<div class="result-foot"><button id="againBtn" class="btn btn-primary">'+firstButton+'</button><button id="resultHomeBtn" class="btn">'+secondButton+'</button></div>';
+  overlayPanel.innerHTML='<div class="overlay-kicker">TỔNG KẾT TRẬN</div><h2>'+title+'</h2>'+(copy?'<p>'+copy+'</p>':'')+'<div class="coin-reward-note">🪙 '+coinText+'<br><span>Số dư: '+profile.coins+' xu · 10 điểm dương = 1 xu</span></div>'+table+'<div class="summary-formula">Tổng điểm = Hạng + Cờ − Phạt.</div>'+(state.onlineMode?'<div id="rematchStatus" class="note rematch-status" role="status">Chờ xác nhận tái đấu · 0/2</div>':'')+'<div class="result-foot"><button id="againBtn" class="btn btn-primary">'+firstButton+'</button><button id="resultHomeBtn" class="btn">'+secondButton+'</button></div>';
   $('againBtn').addEventListener('click',()=>{if(state.onlineMode){window.MINEFALL_ONLINE?.requestRematch();}else startGame();});
   $('resultHomeBtn').addEventListener('click',()=>{if(state.onlineMode)window.MINEFALL_ONLINE?.returnToLobby();else goHome();});
   if(state.onlineMode)window.MINEFALL_APP?.updateOnlineRematchControls(window.MINEFALL_ONLINE?.getRematchStatus?.());
