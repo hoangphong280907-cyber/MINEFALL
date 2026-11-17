@@ -310,7 +310,7 @@
     const progress=clamp(mark.age/mark.life,0,1),fade=1-progress,cell=mark.cellSize||24,s=cell*1.08;
     const effect=mark.effect||'standard',colors=mark.colors||EFFECT_COLORS[effect]||EFFECT_COLORS.standard,pulse=.5+.5*Math.sin(mark.age*23);
     ctx.save();ctx.translate(mark.x,mark.y);
-    if(progress<.3){ctx.globalAlpha=(1-progress/.3)*.74;ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1,cell*.055);ctx.beginPath();ctx.ellipse(0,0,s*(.34+progress*2.5),s*(.22+progress*1.4),0,0,Math.PI*2);ctx.stroke();}
+    if(progress<.3){ctx.globalAlpha=(1-progress/.3)*.74;ctx.strokeStyle=mark.color||'#fff';ctx.lineWidth=Math.max(1,cell*.055);ctx.beginPath();ctx.ellipse(0,0,s*(.34+progress*2.5),s*(.22+progress*1.4),0,0,Math.PI*2);ctx.stroke();}
     switch(effect){
       case 'standard':{
         ctx.globalAlpha=fade*.88;ctx.strokeStyle=colors[1]||colors[0];ctx.lineWidth=cell*.075;ctx.shadowBlur=cell*.8;ctx.shadowColor=colors[0];
