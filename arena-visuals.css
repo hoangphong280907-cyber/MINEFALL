@@ -15,7 +15,7 @@
 .arena-surface-canvas { z-index: 0; }
 .arena-fx-canvas {
   z-index: 4;
-  opacity: .72;
+  opacity: .94;
   mix-blend-mode: screen;
 }
 .board-grid.arena-materialized {
@@ -43,7 +43,7 @@
   100% { filter: brightness(1) saturate(1); }
 }
 @media (max-width: 600px) {
-  .arena-fx-canvas { opacity: .5; }
+  .arena-fx-canvas { opacity: .78; }
 }
 @media (prefers-reduced-motion: reduce) {
   .arena-fx-canvas { opacity: .28; }
