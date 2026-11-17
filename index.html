@@ -1076,7 +1076,7 @@ function showRevealWave(origin,indices){
 }
 function showExplosionBurst(index,player=null){
   const wrap=$('boardWrap');wrap.classList.remove('board-hit');void wrap.offsetWidth;wrap.classList.add('board-hit');
-  const bombId=player?.bomb||(player?.isHuman?profile.equipped.bomb:(state.onlineMode?state.onlineBombSkin:'bomb-standard'))||'bomb-standard';
+  const bombId=state.onlineMode?(state.onlineBombSkin||'bomb-standard'):(profile.equipped.bomb||player?.bomb||'bomb-standard');
   const bomb=getShopItem('bomb',bombId);
   arenaVisualInstance?.impact(index,bomb.effect||'standard',bomb.palette||null);
 }
@@ -1250,7 +1250,7 @@ function advanceTurn(fromId){
   state.currentId=next.id;state.turnId++;state.selected=null;state.mobileBubblesOpen=false;state.humanMoving=false;state.turnLeft=TURN_SECONDS;state.turnBusy=false;
   renderPlayers();renderPawns();renderBoard();renderActionPanel();startTurnTimer();
 
-  else {scheduleBot(next);}
+  if(!next.isHuman)scheduleBot(next);
 }
 function startTurnTimer(){
   if(state.onlineMode||state.ended||!state.started) return;
