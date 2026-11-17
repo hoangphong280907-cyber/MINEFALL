@@ -56,7 +56,7 @@ test('Canvas effects provide layered bomb impacts, movement trails, eliminations
 test('offline and online matches share the improved effects and compact results presentation', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const css = fs.readFileSync(path.join(root, 'arena-visuals.css'), 'utf8');
-  assert.match(html, /const bombId=player\?\.bomb\|\|/);
+    assert.match(html, /const bombId=state\.onlineMode\?\(state\.onlineBombSkin\|\|'bomb-standard'\):\(profile\.equipped\.bomb\|\|player\?\.bomb\|\|'bomb-standard'\)/);
   assert.match(html, /arenaVisualInstance\?\.impact\(index,bomb\.effect\|\|'standard',bomb\.palette\|\|null\)/);
   assert.match(html, /arenaVisualInstance\?\.eliminate\(index,item\.effect\|\|'standard',player\.color\|\|null\)/);
   assert.match(html, /arenaVisualInstance\?\.celebrate\(winner\.pos,celebration\.effect,celebration\.palette\|\|null,winner\.color\|\|null\)/);
