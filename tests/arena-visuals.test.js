@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const ArenaVisuals = require('../arena-visuals.js');
+const cosmetics = require('../cosmetics.js');
 
 test('arena renderer exposes all twelve selectable arena materials', () => {
   assert.equal(ArenaVisuals.themeIds.length, 12);
@@ -69,4 +70,25 @@ test('offline and online matches share the improved effects and compact results 
   assert.doesNotMatch(html, /addLog\('Lượt '\+\(event\.turnId/);
   assert.match(css, /\.sr-only\s*\{/);
   assert.match(css, /\.summary-formula\s*\{/);
+test('every movement and elimination cosmetic has its own animated visual profile', () => {
+  assert.deepEqual([...ArenaVisuals.trailEffectIds], cosmetics.trail.map(item => item.effect));
+  assert.deepEqual([...ArenaVisuals.eliminationEffectIds], cosmetics.elimination.map(item => item.effect));
+
+  const source = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
+  const trailStart = source.indexOf('function drawMotionStreak');
+  const eliminationStart = source.indexOf('function drawEliminationEcho');
+  const victoryStart = source.indexOf('function drawVictoryMark');
+  assert.ok(trailStart >= 0 && eliminationStart > trailStart && victoryStart > eliminationStart);
+
+  const trailRenderer = source.slice(trailStart, eliminationStart);
+  const eliminationRenderer = source.slice(eliminationStart, victoryStart);
+  for (const effect of ArenaVisuals.trailEffectIds) {
+    assert.ok(trailRenderer.includes("case '" + effect + "'"), 'missing unique movement profile: ' + effect);
+  }
+  for (const effect of ArenaVisuals.eliminationEffectIds) {
+    assert.ok(eliminationRenderer.includes("case '" + effect + "'"), 'missing unique elimination profile: ' + effect);
+    assert.ok(ArenaVisuals.effectIds.includes(effect), 'missing elimination color profile: ' + effect);
+  }
+});
+
 });
