@@ -36,7 +36,7 @@ test('particle effect catalogue includes material-specific and cosmetic effects'
 test('renderer module can be imported in Node without a browser DOM', () => {
   assert.equal(typeof ArenaVisuals.mount, 'function');
   assert.equal(typeof ArenaVisuals.paintPreview, 'function');
-  assert.equal(ArenaVisuals.version, '1.0.0');
+  assert.equal(ArenaVisuals.version, '1.1.0');
 });
 
 test('Canvas effects provide layered bomb impacts, movement trails, eliminations and victory bursts', () => {
@@ -70,6 +70,8 @@ test('offline and online matches share the improved effects and compact results 
   assert.doesNotMatch(html, /addLog\('Lượt '\+\(event\.turnId/);
   assert.match(css, /\.sr-only\s*\{/);
   assert.match(css, /\.summary-formula\s*\{/);
+});
+
 test('every movement and elimination cosmetic has its own animated visual profile', () => {
   assert.deepEqual([...ArenaVisuals.trailEffectIds], cosmetics.trail.map(item => item.effect));
   assert.deepEqual([...ArenaVisuals.eliminationEffectIds], cosmetics.elimination.map(item => item.effect));
@@ -89,6 +91,4 @@ test('every movement and elimination cosmetic has its own animated visual profil
     assert.ok(eliminationRenderer.includes("case '" + effect + "'"), 'missing unique elimination profile: ' + effect);
     assert.ok(ArenaVisuals.effectIds.includes(effect), 'missing elimination color profile: ' + effect);
   }
-});
-
 });
