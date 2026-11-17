@@ -128,7 +128,7 @@ test('each cosmetic category has distinct visual data and matching renderer hook
   assert.match(html, /arenaVisualInstance\?\.impact\(index,bomb\.effect\|\|'standard',bomb\.palette\|\|null\)/);
   assert.match(visuals, /instance\.impact=function\(index,effect='standard',palette=null\)/);
   assert.match(visuals, /const colors=Array\.isArray\(palette\)&&palette\.length\?palette:\(EFFECT_COLORS\[effect\]\|\|EFFECT_COLORS\.standard\)/);
-  assert.match(visuals, /const kind=effectKind\(effect\)/);
+  assert.match(visuals, /kind=effectKind\(effect\)/);
   assert.match(css, /\.arena-surface-canvas/);
   assert.match(css, /\.arena-fx-canvas/);
   assert.match(css, /\.board-grid\.arena-materialized/);
