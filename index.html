@@ -1103,6 +1103,7 @@ function spawnMovementTrail(index,player,fromIndex=null){
   if(!Number.isInteger(index)||!player||!player.alive)return;
   const trail=getShopItem('trail',player.trail||(player.isHuman?profile.equipped.trail:'trail-dust')||'trail-dust');
   arenaVisualInstance?.trail(Number.isInteger(fromIndex)?fromIndex:index,index,trail.effect||'dust',player.id);
+  arenaVisualInstance?.feedback(index,'step',player.color||null);
 }
 function showEliminationEffect(player,index){
   if(!player||!Number.isInteger(index))return;
