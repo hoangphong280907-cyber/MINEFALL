@@ -305,6 +305,10 @@
 body.online-session-active .topbar .coin-tag,
 body.online-session-active .topbar #shopBtn { display: none !important; }
 body.online-session-active .top-right { gap: 0; }
+
+/* Hide native scrollbars while keeping wheel, touch, and trackpad scrolling enabled. */
+* { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+*::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
 </style>
 </head>
 <body>
