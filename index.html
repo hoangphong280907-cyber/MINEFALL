@@ -1010,7 +1010,7 @@ function performAction(type){
     state.revealWave={origin:i,cells:new Set(result.newlyOpened||[])};
     addLog(player.name+' đào '+coord(i)+(cell.adj===0?' · mở rộng vùng trống.':' · phát hiện số '+cell.adj+'.')+(result.additionalOpened?' Tự mở thêm '+result.additionalOpened+' ô an toàn.':''),result.additionalOpened?'success':'normal');
     if(result.additionalOpened>0) toast('✓ '+player.name+' mở thêm '+result.additionalOpened+' ô an toàn.');
-    renderBoard();showCellFeedback(i,'dig',result.additionalOpened?'+'+result.additionalOpened+' Ô AN TOÀN':'ĐÃ MỞ');
+    renderBoard();showCellFeedback(i,'dig',result.additionalOpened?'+'+result.additionalOpened+' Ô AN TOÀN':'ĐÃ MỞ',player.color);
     scheduleVisualTimer(()=>{if(state.revealWave&&state.revealWave.origin===i)state.revealWave=null;},520);
     finishAction(player);return;
   }
@@ -1022,7 +1022,7 @@ function performAction(type){
       const old=playerById(flagResult.previousOwner);if(old)old.flagsOwned.delete(i);
       addLog(player.name+' gỡ cờ tại '+coord(i)+' (cờ của '+(old?old.name:'người chơi')+').');
     }else{player.flagsOwned.add(i);addLog(player.name+' cắm cờ tại '+coord(i)+'.');}
-    renderBoard();renderPlayers();showCellFeedback(i,wasFlagged?'unflag':'flag',wasFlagged?'GỠ CỜ':'CẮM CỜ');finishAction(player);return;
+    renderBoard();renderPlayers();showCellFeedback(i,wasFlagged?'unflag':'flag',wasFlagged?'GỠ CỜ':'CẮM CỜ',player.color);finishAction(player);return;
   }
   state.turnBusy=false;renderActionPanel();
 }
@@ -1062,10 +1062,17 @@ function scheduleVisualTimer(fn,delay){
   const timer=setTimeout(()=>{state.visualTimers=state.visualTimers.filter(id=>id!==timer);fn();},delay);
   state.visualTimers.push(timer);return timer;
 }
-function showCellFeedback(index,kind,label){
+function showCellFeedback(index,kind,label,playerColor=null){
   const el=boardGrid.children[index];if(!el)return;
   const cls=kind==='dig'?'dig-feedback':kind==='flag'?'flag-pop':'flag-remove-pop';
   el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);
+  if(arenaVisualInstance){
+    arenaVisualInstance.feedback(index,kind,playerColor);
+    if(kind==='dig'&&state.revealWave&&state.revealWave.origin===index&&state.revealWave.cells instanceof Set){
+      const opened=[...state.revealWave.cells];
+      if(opened.length>1)arenaVisualInstance.revealWave(index,opened,playerColor);
+    }
+  }
   const {r,c}=rc(index),callout=document.createElement('div');
   callout.className='cell-callout '+(kind==='dig'?'dig':kind==='flag'?'flag':'success');
   callout.textContent=label;
@@ -1538,7 +1545,7 @@ function botFlag(bot,i){
   const wasFlagged=flagResult.action==='unflag';
   if(wasFlagged){const old=playerById(flagResult.previousOwner);if(old)old.flagsOwned.delete(i);addLog(bot.name+' gỡ cờ tại '+coord(i)+'.');}
   else{bot.flagsOwned.add(i);addLog(bot.name+' cắm cờ tại '+coord(i)+'.');}
-  renderBoard();renderPlayers();showCellFeedback(i,wasFlagged?'unflag':'flag',wasFlagged?'GỠ CỜ':'CẮM CỜ');finishAction(bot);
+  renderBoard();renderPlayers();showCellFeedback(i,wasFlagged?'unflag':'flag',wasFlagged?'GỠ CỜ':'CẮM CỜ',bot.color);finishAction(bot);
 }
 function botDig(bot,i){
   const cell=state.cells[i];
@@ -1551,7 +1558,7 @@ function botDig(bot,i){
   if(!validateLocalCommand('DIG',bot,i)){state.turnBusy=false;advanceTurn(bot.id);return;}
   const result=revealCell(i);
   if(result.mine){renderBoard();eliminatePlayer(bot,i);}
-  else {state.revealWave={origin:i,cells:new Set(result.newlyOpened||[])};addLog(bot.name+' đào '+coord(i)+(cell.adj===0?' · mở rộng vùng trống.':' · phát hiện số '+cell.adj+'.')+(result.additionalOpened?' Tự mở thêm '+result.additionalOpened+' ô an toàn.':''),result.additionalOpened?'success':'normal');renderBoard();showCellFeedback(i,'dig',result.additionalOpened?'+'+result.additionalOpened+' Ô AN TOÀN':'ĐÃ MỞ');scheduleVisualTimer(()=>{if(state.revealWave&&state.revealWave.origin===i)state.revealWave=null;},520);
+  else {state.revealWave={origin:i,cells:new Set(result.newlyOpened||[])};addLog(bot.name+' đào '+coord(i)+(cell.adj===0?' · mở rộng vùng trống.':' · phát hiện số '+cell.adj+'.')+(result.additionalOpened?' Tự mở thêm '+result.additionalOpened+' ô an toàn.':''),result.additionalOpened?'success':'normal');renderBoard();showCellFeedback(i,'dig',result.additionalOpened?'+'+result.additionalOpened+' Ô AN TOÀN':'ĐÃ MỞ',bot.color);scheduleVisualTimer(()=>{if(state.revealWave&&state.revealWave.origin===i)state.revealWave=null;},520);
     // Only large reveals can trigger a rare automatic emote. Routine actions stay quiet.
     if(result.additionalOpened>=4)maybeShowBotEmote(bot,bot.personality==='aggressive'?'😎':bot.personality==='cautious'?'🤔':'👍','Mở rộng được rồi',.22);
     finishAction(bot);}
@@ -1831,8 +1838,8 @@ function onlineApplyActionVisual(action){
   const stamp=[action.type,action.at||'',action.playerId||'',action.index??'',action.turnId??''].join(':');
   if(stamp===state.onlineLatestActionStamp)return;state.onlineLatestActionStamp=stamp;
   const player=playerById(action.playerId);const index=Number.isInteger(action.index)?action.index:null;
-  if(action.type==='dig'&&index!==null){state.revealWave={origin:index,cells:new Set(action.openedIndices||[index])};renderBoard();showCellFeedback(index,'dig',action.additionalOpened?'+'+action.additionalOpened+' Ô AN TOÀN':'ĐÃ MỞ');showRevealWave(index,action.openedIndices||[index]);addLog((player?.name||'Người chơi')+' đào '+coord(index)+(action.additionalOpened?' · tự mở thêm '+action.additionalOpened+' ô an toàn.':'.'),action.additionalOpened?'success':'normal');if(action.additionalOpened)toast('✓ '+(player?.name||'Người chơi')+' mở thêm '+action.additionalOpened+' ô an toàn.');}
-  else if((action.type==='flag'||action.type==='unflag')&&index!==null){renderBoard();renderPlayers();showCellFeedback(index,action.type,action.type==='flag'?'CẮM CỜ':'GỠ CỜ');addLog((player?.name||'Người chơi')+(action.type==='flag'?' cắm cờ tại ':' gỡ cờ tại ')+coord(index)+'.');}
+  if(action.type==='dig'&&index!==null){state.revealWave={origin:index,cells:new Set(action.openedIndices||[index])};renderBoard();showCellFeedback(index,'dig',action.additionalOpened?'+'+action.additionalOpened+' Ô AN TOÀN':'ĐÃ MỞ',player?.color);showRevealWave(index,action.openedIndices||[index]);addLog((player?.name||'Người chơi')+' đào '+coord(index)+(action.additionalOpened?' · tự mở thêm '+action.additionalOpened+' ô an toàn.':'.'),action.additionalOpened?'success':'normal');if(action.additionalOpened)toast('✓ '+(player?.name||'Người chơi')+' mở thêm '+action.additionalOpened+' ô an toàn.');}
+  else if((action.type==='flag'||action.type==='unflag')&&index!==null){renderBoard();renderPlayers();showCellFeedback(index,action.type,action.type==='flag'?'CẮM CỜ':'GỠ CỜ',player?.color);addLog((player?.name||'Người chơi')+(action.type==='flag'?' cắm cờ tại ':' gỡ cờ tại ')+coord(index)+'.');}
   else if(action.type==='eliminated'&&index!==null){clearMovementTrailsForPlayer(action.playerId);const board=$('boardWrap');board.classList.remove('board-hit');void board.offsetWidth;board.classList.add('board-hit');renderBoard();renderPlayers();renderPawns();showExplosionBurst(index,player);showEliminationEffect(player,index);if(player){showEmote(player,'💥','BỊ LOẠI');toast((player.id===state.onlineSelfId?'💥 BẠN BỊ LOẠI':'💥 '+player.name+' BỊ LOẠI')+(player.place?' · HẠNG '+player.place:''));}addLog((player?.name||'Người chơi')+' đào trúng mìn tại '+coord(index)+' và bị loại.','death');}
   else if(action.type==='turn-timeout'){if(player)showEmote(player,'⌛','Hết giờ · −5 điểm');addLog((player?.name||'Người chơi')+' hết 60 giây. Đứng nguyên vị trí, phạt −5 điểm.','important');}
 
