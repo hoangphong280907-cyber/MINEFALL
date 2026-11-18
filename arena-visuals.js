@@ -647,7 +647,9 @@
       const fallback=kind==='step'?'#d8f7ff':kind==='dig'?'#b9fff2':kind==='flag'?'#ffd36b':'#9bb9ca';
       const color=/^#[0-9a-f]{6}$/i.test(playerColor||'')?playerColor:fallback;
       const addPulse=(delay,life,variant=kind)=>instance.pulses.push({x:point.x,y:point.y,age:0,delay,life,kind:variant,color,cellSize:cell});
-      if(kind==='step'){
+      if(kind==='reveal'){
+        addPulse(0,.48,'reveal');
+      }else if(kind==='step'){
         addPulse(0,.32,'step');
       }else if(kind==='dig'){
         addPulse(0,.68,'dig');addPulse(.12,.58,'dig');
