@@ -36,7 +36,7 @@ test('particle effect catalogue includes material-specific and cosmetic effects'
 test('renderer module can be imported in Node without a browser DOM', () => {
   assert.equal(typeof ArenaVisuals.mount, 'function');
   assert.equal(typeof ArenaVisuals.paintPreview, 'function');
-  assert.equal(ArenaVisuals.version, '1.1.0');
+  assert.equal(ArenaVisuals.version, '1.2.0');
 });
 
 test('Canvas effects provide layered bomb impacts, movement trails, eliminations and victory bursts', () => {
@@ -91,6 +91,26 @@ test('every movement and elimination cosmetic has its own animated visual profil
     assert.ok(eliminationRenderer.includes("case '" + effect + "'"), 'missing unique elimination profile: ' + effect);
     assert.ok(ArenaVisuals.effectIds.includes(effect), 'missing elimination color profile: ' + effect);
   }
+});
+
+test('renderer provides staged dig, flag, unflag and chain-reveal feedback', () => {
+  assert.deepEqual([...ArenaVisuals.actionFeedbackIds], ['dig','flag','unflag','reveal']);
+
+  const renderer = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
+  assert.match(renderer, /function drawActionPulse\(ctx,pulse\)/);
+  assert.match(renderer, /instance\.feedback=function\(index,kind='dig',playerColor=null\)/);
+  assert.match(renderer, /instance\.revealWave=function\(origin,indices,playerColor=null\)/);
+  assert.match(renderer, /pulses:\[\]/);
+  assert.match(renderer, /instance\.pulses\.length>limit/);
+  assert.match(renderer, /instance\.pulses=\[\]/);
+
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.match(html, /function showCellFeedback\(index,kind,label,playerColor=null\)/);
+  assert.match(html, /arenaVisualInstance\.feedback\(index,kind,playerColor\)/);
+  assert.match(html, /arenaVisualInstance\.revealWave\(index,opened,playerColor\)/);
+  assert.match(html, /showCellFeedback\(i,'dig',[^;]*player\.color\)/);
+  assert.match(html, /showCellFeedback\(i,'dig',[^;]*bot\.color\)/);
+  assert.match(html, /showCellFeedback\(index,'dig',[^;]*player\?\.color\)/);
 });
 
 test('native scrollbars are hidden without disabling scrollable content', () => {
