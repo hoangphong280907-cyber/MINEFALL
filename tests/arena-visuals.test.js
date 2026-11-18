@@ -92,3 +92,11 @@ test('every movement and elimination cosmetic has its own animated visual profil
     assert.ok(ArenaVisuals.effectIds.includes(effect), 'missing elimination color profile: ' + effect);
   }
 });
+
+test('native scrollbars are hidden without disabling scrollable content', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.match(html, /\*\s*\{\s*scrollbar-width:\s*none\s*!important;\s*-ms-overflow-style:\s*none\s*!important;\s*\}/);
+  assert.match(html, /\*::\-webkit-scrollbar\s*\{\s*display:\s*none\s*!important;\s*width:\s*0\s*!important;\s*height:\s*0\s*!important;\s*\}/);
+  assert.match(html, /\.log\{[^}]*overflow:auto/);
+  assert.match(html, /\.overlay-panel\{[^}]*overflow:auto/);
+});
