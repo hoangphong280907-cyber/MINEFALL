@@ -99,6 +99,7 @@ test('renderer provides staged dig, flag, unflag and chain-reveal feedback', () 
   const renderer = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
   assert.match(renderer, /function drawActionPulse\(ctx,pulse\)/);
   assert.match(renderer, /instance\.feedback=function\(index,kind='dig',playerColor=null\)/);
+  assert.match(renderer, /if\(kind==='reveal'\)/);
   assert.match(renderer, /if\(pulse\.kind==='step'\)/);
   assert.match(renderer, /color:tint,cellSize:cell/);
   assert.match(renderer, /instance\.revealWave=function\(origin,indices,playerColor=null\)/);
