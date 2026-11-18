@@ -59,7 +59,7 @@
 
   const TRAIL_EFFECTS = Object.freeze(['dust','ember','frost','neon','shadow','rainbow','sakura','circuit','leaf','cosmic']);
   const ELIMINATION_EFFECTS = Object.freeze(['standard','tombstone','void','stone','pixel','rocket','freeze','lightning','shadow','burst']);
-  const ACTION_FEEDBACK = Object.freeze(['dig','flag','unflag','reveal']);
+  const ACTION_FEEDBACK = Object.freeze(['step','dig','flag','unflag','reveal']);
 
   const instances = new WeakMap();
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -355,18 +355,26 @@
   }
 
   function drawVictoryMark(ctx,mark) {
-    const progress=clamp(mark.age/mark.life,0,1),fade=1-progress,radius=7+progress*24;
-    ctx.save();ctx.translate(mark.x,mark.y);ctx.rotate(progress*.65);
-    ctx.globalAlpha=fade*.72;ctx.strokeStyle=mark.color;ctx.shadowBlur=14*fade;ctx.shadowColor=mark.color;ctx.lineWidth=1.35;
+    const progress=clamp(mark.age/mark.life,0,1),fade=1-progress,cell=mark.cellSize||24;
+    const radius=cell*(.2+progress*.86),rotation=progress*.85;
+    ctx.save();ctx.translate(mark.x,mark.y);ctx.rotate(rotation);
+    ctx.globalAlpha=fade*.68;ctx.strokeStyle=mark.color;ctx.shadowBlur=cell*.62*fade;ctx.shadowColor=mark.color;ctx.lineWidth=Math.max(1,cell*.045);
     ctx.beginPath();ctx.arc(0,0,radius,0,Math.PI*2);ctx.stroke();
-    ctx.globalAlpha=fade*.52;ctx.beginPath();
+    ctx.globalAlpha=fade*.38;ctx.lineWidth=Math.max(.65,cell*.022);ctx.setLineDash([cell*.22,cell*.13]);
+    ctx.beginPath();ctx.arc(0,0,radius*1.24,-progress*2.4,Math.PI*1.72-progress*2.4);ctx.stroke();ctx.setLineDash([]);
+    ctx.globalAlpha=fade*.66;ctx.lineWidth=Math.max(.8,cell*.03);
     for(let i=0;i<8;i++){
-      const angle=(Math.PI*2*i/8)-Math.PI/2,inner=radius*.66,outer=radius*(i%2===0?1.28:1.02);
-      const x=Math.cos(angle)*outer,y=Math.sin(angle)*outer;
-      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-      const next=(Math.PI*2*(i+1)/8)-Math.PI/2;ctx.lineTo(Math.cos(next)*inner,Math.sin(next)*inner);
+      const angle=(Math.PI*2*i/8)-Math.PI/2,inner=radius*.78,outer=radius*(i%2===0?1.42:1.16);
+      ctx.beginPath();ctx.moveTo(Math.cos(angle)*inner,Math.sin(angle)*inner);ctx.lineTo(Math.cos(angle)*outer,Math.sin(angle)*outer);ctx.stroke();
     }
-    ctx.closePath();ctx.stroke();ctx.restore();
+    for(let i=0;i<4;i++){
+      const angle=progress*2.2+i*Math.PI/2,orbit=radius*(1.16+Math.sin(progress*Math.PI*2+i)*.07),x=Math.cos(angle)*orbit,y=Math.sin(angle)*orbit,diamond=cell*(.055+.02*Math.sin(progress*Math.PI));
+      ctx.save();ctx.translate(x,y);ctx.rotate(angle+progress*2);ctx.fillStyle=i%2?'#ffffff':mark.color;ctx.globalAlpha=fade*.82;
+      ctx.shadowBlur=cell*.24;ctx.shadowColor=mark.color;ctx.beginPath();ctx.moveTo(0,-diamond*2);ctx.lineTo(diamond,0);ctx.lineTo(0,diamond*2);ctx.lineTo(-diamond,0);ctx.closePath();ctx.fill();ctx.restore();
+    }
+    ctx.globalAlpha=fade*.72;ctx.fillStyle='#ffffff';ctx.shadowBlur=cell*.5;ctx.shadowColor=mark.color;
+    ctx.beginPath();ctx.arc(0,0,cell*(.07+.035*(1-progress)),0,Math.PI*2);ctx.fill();
+    ctx.restore();
   }
 
   function drawActionPulse(ctx,pulse) {
@@ -377,7 +385,17 @@
     ctx.save();ctx.translate(pulse.x,pulse.y);ctx.globalCompositeOperation='lighter';
     ctx.lineCap='round';ctx.lineJoin='round';
 
-    if(pulse.kind==='dig'||pulse.kind==='reveal'){
+    if(pulse.kind==='step'){
+      const radius=cell*(.16+progress*.58);
+      ctx.globalAlpha=fade*.58;ctx.strokeStyle=color;ctx.lineWidth=Math.max(.7,cell*.026);
+      ctx.shadowBlur=cell*.22;ctx.shadowColor=color;
+      ctx.beginPath();ctx.ellipse(0,0,radius,radius*.68,0,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=fade*.3;ctx.lineWidth=Math.max(.55,cell*.018);
+      for(let i=0;i<4;i++){
+        const angle=i*Math.PI/2+progress*.18;
+        ctx.beginPath();ctx.arc(0,0,radius*.78,angle,angle+.42);ctx.stroke();
+      }
+    }else if(pulse.kind==='dig'||pulse.kind==='reveal'){
       const strength=pulse.kind==='dig'?1:.56;
       ctx.globalAlpha=fade*.74*strength;ctx.strokeStyle=color;ctx.lineWidth=Math.max(.8,cell*.045);
       ctx.shadowBlur=cell*.36;ctx.shadowColor=color;
@@ -626,10 +644,12 @@
       const point=instance.cellCenter(index),m=instance.metrics;
       if(!point||!m||!ACTION_FEEDBACK.includes(kind))return false;
       const coarse=coarsePointer(),cell=Math.min(m.cellWidth,m.cellHeight);
-      const fallback=kind==='dig'?'#b9fff2':kind==='flag'?'#ffd36b':'#9bb9ca';
+      const fallback=kind==='step'?'#d8f7ff':kind==='dig'?'#b9fff2':kind==='flag'?'#ffd36b':'#9bb9ca';
       const color=/^#[0-9a-f]{6}$/i.test(playerColor||'')?playerColor:fallback;
       const addPulse=(delay,life,variant=kind)=>instance.pulses.push({x:point.x,y:point.y,age:0,delay,life,kind:variant,color,cellSize:cell});
-      if(kind==='dig'){
+      if(kind==='step'){
+        addPulse(0,.32,'step');
+      }else if(kind==='dig'){
         addPulse(0,.68,'dig');addPulse(.12,.58,'dig');
         const count=coarse?5:9;
         for(let i=0;i<count;i++){
@@ -743,7 +763,7 @@
       const point=instance.cellCenter(index),m=instance.metrics;if(!point||!m)return false;
       const colors=Array.isArray(palette)&&palette.length?palette:(EFFECT_COLORS[effect]||EFFECT_COLORS.confetti);
       const tint=/^#[0-9a-f]{6}$/i.test(playerColor||'')?playerColor:colors[0],cell=Math.min(m.cellWidth,m.cellHeight);
-      instance.victories.push({x:point.x,y:point.y,age:0,life:1.85,color:tint});
+      instance.victories.push({x:point.x,y:point.y,age:0,life:1.85,color:tint,cellSize:cell});
       const anchors=[
         {x:point.x,y:Math.max(cell*.9,point.y-cell*.8)},
         {x:clamp(point.x-cell*1.65,cell*.6,m.width-cell*.6),y:Math.max(cell*.7,point.y-cell*1.45)},
