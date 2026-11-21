@@ -140,6 +140,7 @@ test('host room bomb skin is player-authoritative and toxic impacts have a disti
   const eliminationRenderer = renderer.slice(renderer.indexOf('function drawEliminationEcho'), renderer.indexOf('function drawToxicImpact'));
   assert.match(eliminationRenderer, /central impact veil hides the mine sprite/);
   assert.match(eliminationRenderer, /ctx\.createRadialGradient/);
+  assert.match(eliminationRenderer, /rgba\(255,255,255,\.98\)/);
 });
 
 test('native scrollbars are hidden without disabling scrollable content', () => {
