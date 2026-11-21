@@ -117,6 +117,31 @@ test('renderer provides staged dig, flag, unflag and chain-reveal feedback', () 
   assert.match(html, /showCellFeedback\(index,'dig',[^;]*player\?\.color\)/);
 });
 
+test('mobile flag image failures retain a visible flag fallback with safe stacking', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.match(html, /if\(category==='bomb'\|\|category==='flag'\)/);
+  assert.match(html, /category==='flag'\?'flag-icon flag-fallback'/);
+  assert.match(html, /fallback\.textContent=item\.emoji\|\|\(category==='flag'\?'⚑':'💣'\)/);
+  assert.match(html, /\.cell \.flag-icon,\.cell \.flag-image,\.cell \.flag-fallback\{position:relative;z-index:3/);
+  assert.match(html, /\.cell \.flag-fallback\{display:inline-flex/);
+});
+
+test('host room bomb skin is player-authoritative and toxic impacts have a distinct cloud effect', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const renderer = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
+  assert.match(html, /const bombId=state\.onlineMode\?\(player\?\.bomb\|\|state\.onlineBombSkin\|\|'bomb-standard'\)/);
+  assert.match(renderer, /function drawToxicImpact\(ctx,mark\)/);
+  assert.match(renderer, /instance\.toxicEffects\.push/);
+  assert.match(renderer, /if\(effect==='toxic'\)/);
+  assert.match(renderer, /Large, hollow acid bubbles climb through the cloud/);
+  const burstLoop = renderer.indexOf('for(let i=instance.bursts.length-1;i>=0;i--)');
+  const eliminationLoop = renderer.indexOf('for(let i=instance.eliminations.length-1;i>=0;i--)');
+  assert.ok(burstLoop >= 0 && eliminationLoop > burstLoop, 'elimination must render above bomb impact bursts');
+  const eliminationRenderer = renderer.slice(renderer.indexOf('function drawEliminationEcho'), renderer.indexOf('function drawToxicImpact'));
+  assert.match(eliminationRenderer, /central impact veil hides the mine sprite/);
+  assert.match(eliminationRenderer, /ctx\.createRadialGradient/);
+});
+
 test('native scrollbars are hidden without disabling scrollable content', () => {
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   assert.match(html, /\*\s*\{\s*scrollbar-width:\s*none\s*!important;\s*-ms-overflow-style:\s*none\s*!important;\s*\}/);
