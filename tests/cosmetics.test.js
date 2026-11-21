@@ -50,6 +50,8 @@ test('server validates and broadcasts all player cosmetic equipment', () => {
   assert.equal(publicPlayers[1].bomb, 'bomb-ice');
   const state = manager.publicMatchState(room);
   assert.equal(state.players[0].flag, 'flag-vietnam');
+  assert.equal(state.players[0].bomb, 'bomb-fire');
+  assert.equal(state.players[1].bomb, 'bomb-fire', 'the room host bomb skin must be authoritative for every player');
   assert.equal(state.players[1].celebration, 'celebration-sakura');
 });
 
