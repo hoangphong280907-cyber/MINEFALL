@@ -125,7 +125,7 @@ test('each cosmetic category has distinct visual data and matching renderer hook
   assert.equal(new Set(catalog.bomb.map(item => item.palette.join(','))).size, catalog.bomb.length, 'each bomb should use a distinct color signature');
 
   assert.match(html, /function showExplosionBurst\(index,player=null\)/);
-  assert.match(html, /const bombId=state\.onlineMode\?\(state\.onlineBombSkin\|\|'bomb-standard'\):\(profile\.equipped\.bomb\|\|player\?\.bomb\|\|'bomb-standard'\)/);
+  assert.match(html, /const bombId=state\.onlineMode\?\(player\?\.bomb\|\|state\.onlineBombSkin\|\|'bomb-standard'\):\(profile\.equipped\.bomb\|\|player\?\.bomb\|\|'bomb-standard'\)/);
   assert.match(html, /const bomb=getShopItem\('bomb',bombId\)/);
   assert.match(html, /arenaVisualInstance\?\.impact\(index,bomb\.effect\|\|'standard',bomb\.palette\|\|null\)/);
   assert.match(visuals, /instance\.impact=function\(index,effect='standard',palette=null\)/);
