@@ -314,9 +314,10 @@
     // A central impact veil hides the mine sprite beneath the elimination choreography.
     if(progress<.72){
       const veil=ctx.createRadialGradient(0,0,cell*.035,0,0,s*(.92+progress*.34));
-      veil.addColorStop(0,'rgba(5,11,17,.96)');
-      veil.addColorStop(.38,'rgba(7,14,20,.86)');
-      veil.addColorStop(.72,'rgba(7,14,20,.34)');
+      // The FX canvas uses screen blending, so use a bright cover flash rather than a dark fill.
+      veil.addColorStop(0,'rgba(255,255,255,.98)');
+      veil.addColorStop(.38,'rgba(242,255,251,.82)');
+      veil.addColorStop(.72,'rgba(170,255,232,.22)');
       veil.addColorStop(1,'rgba(7,14,20,0)');
       ctx.globalAlpha=(1-progress/.72)*.94;
       ctx.fillStyle=veil;ctx.beginPath();ctx.arc(0,0,s*(.92+progress*.34),0,Math.PI*2);ctx.fill();
