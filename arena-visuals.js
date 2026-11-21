@@ -311,6 +311,19 @@
     const progress=clamp(mark.age/mark.life,0,1),fade=1-progress,cell=mark.cellSize||24,s=cell*1.08;
     const effect=mark.effect||'standard',colors=mark.colors||EFFECT_COLORS[effect]||EFFECT_COLORS.standard,pulse=.5+.5*Math.sin(mark.age*23);
     ctx.save();ctx.translate(mark.x,mark.y);
+    // A central impact veil hides the mine sprite beneath the elimination choreography.
+    if(progress<.72){
+      const veil=ctx.createRadialGradient(0,0,cell*.035,0,0,s*(.92+progress*.34));
+      veil.addColorStop(0,'rgba(5,11,17,.96)');
+      veil.addColorStop(.38,'rgba(7,14,20,.86)');
+      veil.addColorStop(.72,'rgba(7,14,20,.34)');
+      veil.addColorStop(1,'rgba(7,14,20,0)');
+      ctx.globalAlpha=(1-progress/.72)*.94;
+      ctx.fillStyle=veil;ctx.beginPath();ctx.arc(0,0,s*(.92+progress*.34),0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=(1-progress/.72)*.42;ctx.strokeStyle=mark.color||colors[0];ctx.lineWidth=Math.max(1,cell*.055);
+      ctx.shadowBlur=cell*.5;ctx.shadowColor=mark.color||colors[0];
+      ctx.beginPath();ctx.arc(0,0,s*(.28+progress*.62),0,Math.PI*2);ctx.stroke();
+    }
     if(progress<.3){ctx.globalAlpha=(1-progress/.3)*.74;ctx.strokeStyle=mark.color||'#fff';ctx.lineWidth=Math.max(1,cell*.055);ctx.beginPath();ctx.ellipse(0,0,s*(.34+progress*2.5),s*(.22+progress*1.4),0,0,Math.PI*2);ctx.stroke();}
     switch(effect){
       case 'standard':{
@@ -350,6 +363,63 @@
       case 'burst':{
         ctx.globalAlpha=fade*.8;ctx.strokeStyle=colors[0];ctx.lineWidth=cell*.055;ctx.shadowBlur=cell*1.6;ctx.shadowColor=colors[1]||colors[0];for(let i=0;i<16;i++){const a=i*Math.PI/8+progress*.12,inner=s*(.16+progress*.2),outer=s*(.75+Math.sin(i*4+mark.age*16)*.18+progress*.55);ctx.beginPath();ctx.moveTo(Math.cos(a)*inner,Math.sin(a)*inner);ctx.lineTo(Math.cos(a)*outer,Math.sin(a)*outer);ctx.stroke();}ctx.globalAlpha=fade*.8;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,0,s*(.16+progress*.1),0,Math.PI*2);ctx.fill();break;
       }
+    }
+    ctx.restore();
+  }
+
+  function drawToxicImpact(ctx,mark) {
+    const progress=clamp(mark.age/mark.life,0,1),fade=Math.pow(1-progress,1.35);
+    const cell=mark.cellSize||24,colors=mark.colors||['#eaff5b','#81e64b','#31c77a'];
+    const seed=mark.seed||1;
+    const rgba=(hex,alpha)=>{
+      const value=String(hex).replace('#','');
+      if(!/^[0-9a-f]{6}$/i.test(value))return 'rgba(125,235,72,'+alpha+')';
+      return 'rgba('+parseInt(value.slice(0,2),16)+','+parseInt(value.slice(2,4),16)+','+parseInt(value.slice(4,6),16)+','+alpha+')';
+    };
+    ctx.save();ctx.translate(mark.x,mark.y);ctx.globalCompositeOperation='screen';
+
+    // Corrosive puddle and broken hazard rings anchor the effect to the mine tile.
+    const puddleRadius=cell*(.42+progress*.82);
+    const puddle=ctx.createRadialGradient(0,cell*.12,1,0,cell*.12,puddleRadius);
+    puddle.addColorStop(0,rgba(colors[1]||'#81e64b',.38*fade));
+    puddle.addColorStop(.58,rgba(colors[2]||'#31c77a',.22*fade));
+    puddle.addColorStop(1,rgba(colors[2]||'#31c77a',0));
+    ctx.globalAlpha=1;ctx.fillStyle=puddle;ctx.beginPath();ctx.ellipse(0,cell*.12,puddleRadius,cell*(.18+progress*.11),0,0,Math.PI*2);ctx.fill();
+
+    for(let ring=0;ring<3;ring++){
+      const ringProgress=clamp(progress-ring*.11,0,1),radius=cell*(.36+ringProgress*(1.05+ring*.18));
+      ctx.globalAlpha=fade*(.7-ring*.12);ctx.strokeStyle=colors[ring%colors.length];ctx.lineWidth=Math.max(1,cell*(.035-ring*.006));
+      ctx.shadowBlur=cell*.28;ctx.shadowColor=colors[ring%colors.length];ctx.setLineDash([cell*(.12+ring*.035),cell*(.08+ring*.02)]);
+      ctx.beginPath();ctx.ellipse(0,cell*.1,radius,radius*.34,0,progress*5+ring,Math.PI*1.82+progress*5+ring);ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Layered gas lobes rise and spread instead of using the generic circular burst.
+    for(let i=0;i<7;i++){
+      const offset=randomAt(seed,i+4),phase=i*Math.PI*2/7;
+      const drift=progress*(.34+offset*.54);
+      const x=Math.cos(phase+progress*.9)*cell*(.22+offset*.34+drift*.25);
+      const y=-cell*(.08+drift*1.1)+Math.sin(phase*1.7)*cell*.08;
+      const radius=cell*(.16+randomAt(seed,i+20)*.13)*(1+progress*.34);
+      const cloud=ctx.createRadialGradient(x-radius*.16,y-radius*.18,1,x,y,radius*1.35);
+      cloud.addColorStop(0,rgba(colors[i%colors.length],.42*fade));
+      cloud.addColorStop(.48,rgba(colors[(i+1)%colors.length],.2*fade));
+      cloud.addColorStop(1,rgba(colors[2]||'#31c77a',0));
+      ctx.globalAlpha=1;ctx.fillStyle=cloud;ctx.beginPath();ctx.ellipse(x,y,radius*1.08,radius*.8,phase*.12,0,Math.PI*2);ctx.fill();
+    }
+
+    // Large, hollow acid bubbles climb through the cloud on staggered paths.
+    for(let i=0;i<9;i++){
+      const phase=randomAt(seed,i+40)*Math.PI*2;
+      const travel=(progress*.92+randomAt(seed,i+60)*.72)%1;
+      const x=Math.sin(phase+travel*4.2)*cell*(.18+randomAt(seed,i+80)*.66);
+      const y=cell*.16-travel*cell*1.42;
+      const radius=cell*(.055+randomAt(seed,i+100)*.075);
+      ctx.globalAlpha=fade*(.45+.38*Math.sin(travel*Math.PI));
+      ctx.strokeStyle=colors[(i+1)%colors.length];ctx.lineWidth=Math.max(1,cell*.024);
+      ctx.shadowBlur=cell*.16;ctx.shadowColor=colors[1]||colors[0];
+      ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=fade*.48;ctx.fillStyle='#f4ffbb';ctx.beginPath();ctx.arc(x-radius*.28,y-radius*.3,Math.max(.6,radius*.2),0,Math.PI*2);ctx.fill();
     }
     ctx.restore();
   }
@@ -489,7 +559,7 @@
     const instance={
       wrap,grid,surface,fx,surfaceContext:surface.getContext('2d',{alpha:true}),fxContext:fx.getContext('2d',{alpha:true}),
       theme:options.theme||'arena-standard',size:options.size||16,cells:options.cells||[],metrics:null,
-      particles:[],bursts:[],streaks:[],pulses:[],eliminations:[],victories:[],decals:[],lastFrame:0,lastAmbient:0,raf:0,destroyed:false,
+      particles:[],bursts:[],streaks:[],pulses:[],toxicEffects:[],eliminations:[],victories:[],decals:[],lastFrame:0,lastAmbient:0,raf:0,destroyed:false,
       reducedMotion:!!(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches),
       resizeObserver:null
     };
@@ -582,11 +652,6 @@
         if(pulse.age>=(pulse.delay||0)+pulse.life){instance.pulses.splice(i,1);continue;}
         drawActionPulse(ctx,pulse);
       }
-      for(let i=instance.eliminations.length-1;i>=0;i--){
-        const mark=instance.eliminations[i];mark.age+=dt;
-        if(mark.age>=mark.life){instance.eliminations.splice(i,1);continue;}
-        drawEliminationEcho(ctx,mark);
-      }
       for(let i=instance.particles.length-1;i>=0;i--){
         const p=instance.particles[i];p.age+=dt;
         p.vx*=Math.pow(.985,dt*60);p.vy+=p.gravity*dt;
@@ -598,6 +663,17 @@
         const burst=instance.bursts[i];burst.age+=dt;
         if(burst.age>=(burst.delay||0)+burst.life){instance.bursts.splice(i,1);continue;}
         drawBurst(burst,ctx);
+      }
+      for(let i=instance.toxicEffects.length-1;i>=0;i--){
+        const mark=instance.toxicEffects[i];mark.age+=dt;
+        if(mark.age>=mark.life){instance.toxicEffects.splice(i,1);continue;}
+        drawToxicImpact(ctx,mark);
+      }
+      // Draw eliminations after bomb impacts and particles so the death choreography stays in front.
+      for(let i=instance.eliminations.length-1;i>=0;i--){
+        const mark=instance.eliminations[i];mark.age+=dt;
+        if(mark.age>=mark.life){instance.eliminations.splice(i,1);continue;}
+        drawEliminationEcho(ctx,mark);
       }
       for(let i=instance.victories.length-1;i>=0;i--){
         const mark=instance.victories[i];mark.age+=dt;
@@ -614,7 +690,7 @@
         }
       }
 
-      if(!instance.reducedMotion||instance.particles.length||instance.bursts.length||instance.streaks.length||instance.pulses.length||instance.eliminations.length||instance.victories.length) {
+      if(!instance.reducedMotion||instance.particles.length||instance.bursts.length||instance.streaks.length||instance.pulses.length||instance.toxicEffects.length||instance.eliminations.length||instance.victories.length) {
         instance.raf=requestAnimationFrame(render);
       }
     }
@@ -723,6 +799,21 @@
       if(effect==='fire'||effect==='standard'||effect==='plasma'){
         for(let i=0;i<5;i++)addParticle(createParticle(point.x+(Math.random()-.5)*10,point.y+(Math.random()-.5)*10,(Math.random()-.5)*14,-12-Math.random()*22,5+Math.random()*8,'rgba(70,65,65,.55)',.9+Math.random()*.55,'smoke'));
       }
+      if(effect==='toxic'){
+        instance.toxicEffects.push({x:point.x,y:point.y,age:0,life:1.12,cellSize:cell,colors,seed:hash('toxic:'+index+':'+Math.round(performance.now()))});
+        const count=coarse?7:12;
+        for(let i=0;i<count;i++){
+          const angle=Math.PI*2*i/count+(Math.random()-.5)*.3;
+          const speed=cell*(.45+Math.random()*1.1);
+          const puff=createParticle(point.x+(Math.random()-.5)*cell*.3,point.y+(Math.random()-.5)*cell*.2,Math.cos(angle)*speed,-cell*(.55+Math.random()*1.25),cell*(.16+Math.random()*.15),colors[i%colors.length],.72+Math.random()*.48,'smoke');
+          puff.gravity=-cell*.22;puff.alpha=.62;addParticle(puff);
+        }
+        for(let i=0;i<(coarse?6:10);i++){
+          const x=point.x+(Math.random()-.5)*cell*.9,y=point.y+(Math.random()-.5)*cell*.55;
+          const bubble=createParticle(x,y,(Math.random()-.5)*cell*.45,-cell*(.42+Math.random()*.82),cell*(.1+Math.random()*.075),colors[(i+1)%colors.length],.64+Math.random()*.5,'bubble');
+          bubble.gravity=-cell*.12;bubble.alpha=.94;addParticle(bubble);
+        }
+      }
       if(effect==='tombstone')instance.decals.push({type:'tombstone',x:point.x,y:point.y});
       start();return true;
     };
@@ -789,7 +880,7 @@
       instance.streaks=instance.streaks.filter(streak=>streak.playerId!==playerId);
     };
     instance.clearTransient=function(){
-      instance.particles=[];instance.bursts=[];instance.streaks=[];instance.pulses=[];instance.eliminations=[];instance.victories=[];instance.decals=[];
+      instance.particles=[];instance.bursts=[];instance.streaks=[];instance.pulses=[];instance.toxicEffects=[];instance.eliminations=[];instance.victories=[];instance.decals=[];
       if(instance.fxContext&&instance.metrics)instance.fxContext.clearRect(0,0,instance.metrics.width,instance.metrics.height);
     };
     instance.destroy=function(){
