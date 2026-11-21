@@ -486,12 +486,13 @@ function createCosmeticImage(category,item,className,alt=''){
   image.src=category==='skin'?`/assets/skins/${item.id}.png`:`/assets/${folder}/${item.asset}`;
   image.addEventListener('error',()=>{
     image.dataset.assetFailed='true';
-    // A missing bomb sprite must never silently leave an empty tile. Keep a visible fallback.
-    if(category==='bomb'){
+    // Never let a transient asset failure leave a placed flag invisible on mobile.
+    if(category==='bomb'||category==='flag'){
       const fallback=document.createElement('span');
-      fallback.className=(className||'')+' mine-fallback';
-      fallback.textContent=item.emoji||'💣';
-      fallback.setAttribute('aria-label',alt||item.title||'Mìn');
+      fallback.className=category==='flag'?'flag-icon flag-fallback':'mine-fallback';
+      fallback.textContent=item.emoji||(category==='flag'?'⚑':'💣');
+      fallback.setAttribute('aria-label',alt||item.title||(category==='flag'?'Cờ':'Mìn'));
+      if(category==='flag')fallback.style.color='var(--flag-color,#ffc267)';
       image.replaceWith(fallback);
     }else image.remove();
   },{once:true});
@@ -1087,7 +1088,7 @@ function showRevealWave(origin,indices){
 }
 function showExplosionBurst(index,player=null){
   const wrap=$('boardWrap');wrap.classList.remove('board-hit');void wrap.offsetWidth;wrap.classList.add('board-hit');
-  const bombId=state.onlineMode?(state.onlineBombSkin||'bomb-standard'):(profile.equipped.bomb||player?.bomb||'bomb-standard');
+  const bombId=state.onlineMode?(player?.bomb||state.onlineBombSkin||'bomb-standard'):(profile.equipped.bomb||player?.bomb||'bomb-standard');
   const bomb=getShopItem('bomb',bombId);
   arenaVisualInstance?.impact(index,bomb.effect||'standard',bomb.palette||null);
 }
