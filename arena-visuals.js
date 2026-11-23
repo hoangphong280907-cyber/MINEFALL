@@ -570,7 +570,7 @@
       const rect=grid.getBoundingClientRect();
       if(!rect.width||!rect.height)return;
       const coarse=coarsePointer();
-      const dpr=Math.min(window.devicePixelRatio||1,coarse?1.25:1.65);
+      const dpr=Math.min(window.devicePixelRatio||1,coarse?1.0:1.65);
       const gapX=parseFloat(getComputedStyle(grid).columnGap)||1;
       const gapY=parseFloat(getComputedStyle(grid).rowGap)||gapX;
       instance.metrics={width:rect.width,height:rect.height,dpr,gapX,gapY,cellWidth:(rect.width-gapX*(instance.size-1))/instance.size,cellHeight:(rect.height-gapY*(instance.size-1))/instance.size};
@@ -588,11 +588,12 @@
 
     function visible() {
       if(document.visibilityState==='hidden')return false;
-      return grid.getBoundingClientRect().width>0&&grid.getBoundingClientRect().height>0;
+      const rect=grid.getBoundingClientRect();
+      return rect.width>0&&rect.height>0;
     }
 
     function addParticle(particle) {
-      const maximum=coarsePointer()?84:160;
+      const maximum=coarsePointer()?36:160;
       if(instance.particles.length>=maximum)instance.particles.splice(0,instance.particles.length-maximum+1);
       instance.particles.push(particle);
     }
@@ -634,13 +635,18 @@
     function render(now) {
       instance.raf=0;
       if(instance.destroyed||!visible())return;
+      const coarse=coarsePointer();
+      if(coarse&&instance.lastFrame&&now-instance.lastFrame<1000/30){
+        instance.raf=requestAnimationFrame(render);
+        return;
+      }
       const dt=instance.lastFrame?clamp((now-instance.lastFrame)/1000,0,.05):.016;
       instance.lastFrame=now;
       const ctx=instance.fxContext,m=instance.metrics;
       if(!ctx||!m)return;
       ctx.clearRect(0,0,m.width,m.height);
 
-      if(!instance.reducedMotion&&now-instance.lastAmbient>240&&instance.particles.length<(coarsePointer()?12:22)){
+      if(!instance.reducedMotion&&!coarse&&now-instance.lastAmbient>240&&instance.particles.length<22){
         ambientParticle(now);instance.lastAmbient=now;
       }
       for(let i=instance.streaks.length-1;i>=0;i--){
@@ -691,7 +697,8 @@
         }
       }
 
-      if(!instance.reducedMotion||instance.particles.length||instance.bursts.length||instance.streaks.length||instance.pulses.length||instance.toxicEffects.length||instance.eliminations.length||instance.victories.length) {
+      const hasTransient=instance.particles.length||instance.bursts.length||instance.streaks.length||instance.pulses.length||instance.toxicEffects.length||instance.eliminations.length||instance.victories.length;
+      if((!instance.reducedMotion&&!coarse)||hasTransient){
         instance.raf=requestAnimationFrame(render);
       }
     }

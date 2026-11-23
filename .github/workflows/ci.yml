@@ -24,7 +24,7 @@ jobs:
           node-version: 22.x
 
       - name: Install server dependency
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Check JavaScript syntax
         run: |

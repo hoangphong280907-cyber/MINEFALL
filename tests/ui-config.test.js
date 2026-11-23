@@ -127,3 +127,12 @@ test('character sprites scale from the selected board cell and animate the visib
   assert.match(html, /@keyframes pawnSpriteMove/);
   assert.match(html, /@media\(prefers-reduced-motion:reduce\)/);
 });
+test('default classic flags inherit player color and flag score UI shows plus/minus ten', () => {
+  assert.match(html, /function createPlayerColorFlag\(color,alt='Cờ người chơi'\)/);
+  assert.match(html, /flagItem\.id==='flag-classic'\?createPlayerColorFlag\(owner\?\.color\|\|'#ffc267',flagItem\.title\)/);
+  assert.match(html, /\.cell \.flag-classic-player-color svg/);
+  assert.match(html, /<b class="plus">\+10 điểm<\/b>/);
+  assert.match(html, /<b class="minus">−10 điểm<\/b>/);
+  assert.match(html, /Cờ đúng \+10/);
+  assert.doesNotMatch(html, /Cờ đúng \+1(?!0)/);
+});

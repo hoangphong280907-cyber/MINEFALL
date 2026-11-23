@@ -460,7 +460,7 @@ class RoomManager {
     state.matchLeft = Math.max(0, Number(state.matchLeft) || 0);
     state.turnDeadline = null; state.matchDeadline = null;
     state.endRevealComplete = true;
-    state.scoreNote = 'Điểm cờ đúng +1, cờ sai −1 cho tất cả người chơi, kể cả người đã bị loại. Tổng điểm = điểm hạng + điểm cờ − (5 × lượt bỏ qua).';
+    state.scoreNote = 'Điểm cờ đúng +10, cờ sai −10 cho tất cả người chơi, kể cả người đã bị loại. Tổng điểm = điểm hạng + điểm cờ − (5 × lượt bỏ qua).';
     state.lastEvent = { type: 'match-ended', reason, results, at: this.now() };
     room.lastEvent = state.lastEvent;
     return state;

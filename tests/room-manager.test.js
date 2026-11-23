@@ -282,7 +282,7 @@ test('Phase 0.9C: hidden mines stay private in play and all become public with a
   assert.equal(after.results.players.length, 2);
   const flagOwnerResult = after.results.players.find(result => result.id === state.players[1].id);
   assert.equal(flagOwnerResult.wrongFlags, 1);
-  assert.equal(flagOwnerResult.flagScore, -1);
+  assert.equal(flagOwnerResult.flagScore, -10);
 });
 
 
@@ -321,7 +321,7 @@ test('Phase 0.9C: explicitly leaving a match preserves the leaver flags for fina
   assert.equal(state.ended, true);
   const result = state.results.players.find(player => player.id === ownerId);
   assert.equal(result.correctFlags, 1);
-  assert.equal(result.flagScore, 1);
+  assert.equal(result.flagScore, 10);
 });
 
 

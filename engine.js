@@ -305,7 +305,7 @@
       }
       for (const player of players) {
         const update = resultById.get(player.id);
-        update.flagScore = update.correctFlags - update.wrongFlags;
+        update.flagScore = (update.correctFlags - update.wrongFlags) * 10;
       }
     }
 

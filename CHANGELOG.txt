@@ -1,3 +1,10 @@
+[1.0.0-rc.3 — flag scoring, player-colored default flags and mobile performance]
+- Changed final flag scoring to +10 points per correct flag and −10 points per incorrect flag. The same server-authoritative engine is used for offline and online results; placement and missed-turn penalties remain unchanged.
+- The default classic flag is now drawn in its owner's player color. Equipped country/event flag cosmetics keep their original artwork.
+- Reduced the mobile Canvas device-pixel ratio, removed idle ambient-particle rendering on coarse-pointer devices, capped active effects at 30 FPS and stopped the mobile animation loop when no transient effect remains.
+- Updated the score panel, action help, server result note, tests and release documentation. No new game modes were added; offline and online mode research remains a later roadmap item.
+- Verification: regression tests and CI checks are included in this commit. Real-device mobile playtesting and full 2–5-client browser verification remain release gates; this is an RC build, not a signed-off 1.0.0 final release.
+
 [RC3 preview — dynamic character scale and lightweight animation]
 - Character sprite frame now scales to 76% of the selected board cell instead of a board-relative 3.6% capped at 25px. This removes the tiny-sprite effect across supported board sizes.
 - Updated crowd offsets to scale with cell size so nearby pawns remain inside their cell bounds.

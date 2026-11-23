@@ -279,7 +279,7 @@
 .pawn.skin-crimson .pawn-body{border-radius:32% 32% 47% 47%;box-shadow:inset 0 -3px 0 #0003,0 0 8px #ff4c5b80}
 .pawn.skin-mint .pawn-body{border-radius:50% 50% 42% 42%;box-shadow:inset 0 -3px 0 #0003,0 0 8px #63e0d590}
 
-.cell .flag-image{display:block;width:clamp(12px,1.35vw,20px);height:clamp(12px,1.35vw,20px);object-fit:contain;filter:drop-shadow(0 1px 1px #0008);z-index:1}.cell .flag-icon,.cell .flag-image,.cell .flag-fallback{position:relative;z-index:3;flex:0 0 auto}.cell .flag-fallback{display:inline-flex;align-items:center;justify-content:center;width:clamp(12px,1.35vw,20px);height:clamp(12px,1.35vw,20px);font-size:clamp(12px,1.35vw,20px);line-height:1;text-shadow:0 1px 2px #0009}.cell .mine-image{display:block;width:clamp(17px,1.8vw,27px);height:clamp(17px,1.8vw,27px);object-fit:contain;filter:drop-shadow(0 1px 2px #000b);transform:scale(1.04)}.cell .mine-fallback{display:grid;place-items:center;font-size:clamp(14px,1.6vw,23px);line-height:1;filter:drop-shadow(0 1px 2px #000b)}.cell.mine-skin-bomb-fire .mine-image{filter:drop-shadow(0 0 4px #ff6b27)}.cell.mine-skin-bomb-ice .mine-image{filter:drop-shadow(0 0 4px #79dfff)}.cell.mine-skin-bomb-toxic .mine-image{filter:drop-shadow(0 0 4px #7bff4c)}.cell.mine-skin-bomb-lightning .mine-image{filter:drop-shadow(0 0 4px #ffe75d)}.cell.mine-skin-bomb-void .mine-image{filter:drop-shadow(0 0 5px #a57bff)}.cell.mine-skin-bomb-cosmic .mine-image{filter:drop-shadow(0 0 5px #bfa6ff)}.cell.mine-skin-bomb-plasma .mine-image{filter:drop-shadow(0 0 5px #f0a4ff)}.shop-preview.has-art>span:first-child{display:none}.shop-preview-art{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);object-fit:contain;z-index:2;filter:drop-shadow(0 2px 3px #0008)}/* Character sprites fill a predictable cell-relative frame; the PNG itself keeps transparent safety padding. */
+.cell .flag-image{display:block;width:clamp(12px,1.35vw,20px);height:clamp(12px,1.35vw,20px);object-fit:contain;filter:drop-shadow(0 1px 1px #0008);z-index:1}.cell .flag-classic-player-color{display:block;width:clamp(12px,1.35vw,20px);height:clamp(12px,1.35vw,20px);filter:drop-shadow(0 1px 1px #0008)}.cell .flag-classic-player-color svg{display:block;width:100%;height:100%;overflow:visible}.cell .flag-icon,.cell .flag-image,.cell .flag-fallback{position:relative;z-index:3;flex:0 0 auto}.cell .flag-fallback{display:inline-flex;align-items:center;justify-content:center;width:clamp(12px,1.35vw,20px);height:clamp(12px,1.35vw,20px);font-size:clamp(12px,1.35vw,20px);line-height:1;text-shadow:0 1px 2px #0009}.cell .mine-image{display:block;width:clamp(17px,1.8vw,27px);height:clamp(17px,1.8vw,27px);object-fit:contain;filter:drop-shadow(0 1px 2px #000b);transform:scale(1.04)}.cell .mine-fallback{display:grid;place-items:center;font-size:clamp(14px,1.6vw,23px);line-height:1;filter:drop-shadow(0 1px 2px #000b)}.cell.mine-skin-bomb-fire .mine-image{filter:drop-shadow(0 0 4px #ff6b27)}.cell.mine-skin-bomb-ice .mine-image{filter:drop-shadow(0 0 4px #79dfff)}.cell.mine-skin-bomb-toxic .mine-image{filter:drop-shadow(0 0 4px #7bff4c)}.cell.mine-skin-bomb-lightning .mine-image{filter:drop-shadow(0 0 4px #ffe75d)}.cell.mine-skin-bomb-void .mine-image{filter:drop-shadow(0 0 5px #a57bff)}.cell.mine-skin-bomb-cosmic .mine-image{filter:drop-shadow(0 0 5px #bfa6ff)}.cell.mine-skin-bomb-plasma .mine-image{filter:drop-shadow(0 0 5px #f0a4ff)}.shop-preview.has-art>span:first-child{display:none}.shop-preview-art{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px);object-fit:contain;z-index:2;filter:drop-shadow(0 2px 3px #0008)}/* Character sprites fill a predictable cell-relative frame; the PNG itself keeps transparent safety padding. */
 .pawn-sprite{position:absolute;inset:-18%;width:136%;height:136%;object-fit:contain;z-index:2;pointer-events:none;filter:drop-shadow(0 2px 2px #0009)}
 .pawn.has-sprite .pawn-body{opacity:0}.pawn.has-sprite .pawn-sprite{opacity:1}
 .pawn.has-sprite:not(.moving):not(.dead) .pawn-sprite{animation:pawnSpriteIdle 2.8s ease-in-out infinite;transform-origin:50% 78%}
@@ -407,7 +407,7 @@ body.online-session-active .top-right { gap: 0; }
       <aside class="stack left-stack">
         <section class="panel side-card"><div class="card-title"><span>Đồng hồ trận</span><span id="matchDurationBadge">10 MIN</span></div><div id="matchTimer" class="time">10:00</div><div class="progress"><div id="matchFill"></div></div></section>
         <section class="panel side-card"><div class="card-title"><span>Người chơi</span><span id="aliveCount">—</span></div><div id="playersList" class="players"></div></section>
-        <section class="panel side-card"><div class="card-title"><span>Điểm cờ</span><span id="scoreGateTag" class="score-gate">CHƯA XÉT</span></div><div class="guide-line"><span>Cờ đúng</span><b class="plus">+1 điểm</b></div><div class="guide-line"><span>Cờ sai</span><b class="minus">−1 điểm</b></div><div id="scoreRuleNote" class="warning">Cờ đúng +1 · Cờ sai −1 · kể cả người đã bị loại.</div></section>
+        <section class="panel side-card"><div class="card-title"><span>Điểm cờ</span><span id="scoreGateTag" class="score-gate">CHƯA XÉT</span></div><div class="guide-line"><span>Cờ đúng</span><b class="plus">+10 điểm</b></div><div class="guide-line"><span>Cờ sai</span><b class="minus">−10 điểm</b></div><div id="scoreRuleNote" class="warning">Cờ đúng +10 · Cờ sai −10 · kể cả người đã bị loại.</div></section>
       </aside>
 
       <section class="panel board-card">
@@ -497,6 +497,22 @@ function createCosmeticImage(category,item,className,alt=''){
     }else image.remove();
   },{once:true});
   return image;
+}
+function createPlayerColorFlag(color,alt='Cờ người chơi'){
+  const namespace='http://www.w3.org/2000/svg';
+  const safeColor=/^#[0-9a-f]{6}$/i.test(String(color||''))?color:'#ffc267';
+  const wrapper=document.createElement('span');
+  wrapper.className='flag-icon flag-classic-player-color';
+  wrapper.setAttribute('role','img');wrapper.setAttribute('aria-label',alt||'Cờ người chơi');
+  const svg=document.createElementNS(namespace,'svg');
+  svg.setAttribute('viewBox','0 0 100 64');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');
+  const pole=document.createElementNS(namespace,'path');
+  pole.setAttribute('d','M18 7V57');pole.setAttribute('stroke','#c9d5da');pole.setAttribute('stroke-width','4');pole.setAttribute('stroke-linecap','round');
+  const cloth=document.createElementNS(namespace,'path');
+  cloth.setAttribute('d','M21 9L77 18L52 34L21 28Z');cloth.setAttribute('fill',safeColor);cloth.setAttribute('stroke','#fff3c4');cloth.setAttribute('stroke-width','2');
+  const base=document.createElementNS(namespace,'circle');
+  base.setAttribute('cx','18');base.setAttribute('cy','58');base.setAttribute('r','4');base.setAttribute('fill','#6f8791');
+  svg.append(pole,cloth,base);wrapper.appendChild(svg);return wrapper;
 }
 function isItemOwned(category,id){return profile.owned[category].includes(id);}
 function renderWallet(){
@@ -777,7 +793,7 @@ function renderCell(i){
   }
   if(cell.flagOwner){
     el.classList.add('flagged');const owner=flagOwnerPlayer;el.style.setProperty('--flag-color',owner?owner.color:'#ffc267');
-    const flag=createCosmeticImage('flag',flagItem,'flag-icon flag-image',flagItem.title)||document.createElement('span');if(!flag.classList.contains('flag-image')){flag.className='flag-icon '+flagItem.id;flag.textContent=flagItem.emoji;flag.style.color=owner?owner.color:'#ffc267';}flag.setAttribute('aria-label',flagItem.title);el.appendChild(flag);
+    const flag=flagItem.id==='flag-classic'?createPlayerColorFlag(owner?.color||'#ffc267',flagItem.title):(createCosmeticImage('flag',flagItem,'flag-icon flag-image',flagItem.title)||document.createElement('span'));if(!flag.classList.contains('flag-image')&&!flag.classList.contains('flag-classic-player-color')){flag.className='flag-icon '+flagItem.id;flag.textContent=flagItem.emoji;flag.style.color=owner?owner.color:'#ffc267';}flag.setAttribute('aria-label',flagItem.title);el.appendChild(flag);
     if(cell.endRevealed&&cell.mine){const under=document.createElement('span');under.className='mine-under-flag';under.textContent='✹';el.appendChild(under);}
   }
   if(cell.endFlagWrong&&cell.endWrongMarkVisible){const wrong=document.createElement('span');wrong.className='wrong-mark';wrong.textContent='×';wrong.setAttribute('aria-label','Cờ sai');el.appendChild(wrong);}
@@ -1190,7 +1206,7 @@ function renderActionPanel(){
 function renderPlayers(){
   const list=$('playersList');list.replaceChildren();const alive=alivePlayers();$('aliveCount').textContent=alive.length+' / '+state.players.length+' SỐNG';
   const scoreTag=$('scoreGateTag');if(scoreTag){scoreTag.textContent=state.scored?'ĐÃ XÉT':state.ended?'BỎ QUA':'CHƯA XÉT';scoreTag.className='score-gate'+(state.scored?' evaluated':state.ended?' skipped':'');}
-  const scoreRule=$('scoreRuleNote');if(scoreRule){scoreRule.textContent=state.ended?(state.scored?'Cờ còn trên bàn vẫn được tính cho chủ cờ.':'Điểm cờ không được tính.'):'Cờ đúng +1 · Cờ sai −1 · kể cả người đã bị loại.';}
+  const scoreRule=$('scoreRuleNote');if(scoreRule){scoreRule.textContent=state.ended?(state.scored?'Cờ còn trên bàn vẫn được tính cho chủ cờ.':'Điểm cờ không được tính.'):'Cờ đúng +10 · Cờ sai −10 · kể cả người đã bị loại.';}
   for(const player of state.players){
     const row=document.createElement('div');row.className='player'+(player.id===state.currentId&&!state.ended?' current':'')+(!player.alive?' dead':'');
     const avatar=document.createElement('div');avatar.className='avatar';avatar.style.background=player.color;avatar.textContent=state.onlineMode?getShopItem('avatar',player.avatar||'avatar-cadet').emoji:(player.isHuman?getShopItem('avatar',profile.equipped.avatar).emoji:player.name.replace('BOT ','').slice(0,2));if(player.isHuman||state.onlineMode)avatar.style.fontSize='18px';const cross=document.createElement('span');cross.className='cross';cross.textContent='×';avatar.appendChild(cross);
@@ -1621,7 +1637,7 @@ function applyMatchOutcome(reason){
   const result=Engine.calculateMatchResult({players:state.players,cells:state.cells,deathOrder:state.deathOrder,reason,placePoints:PLACE_POINTS,skipPenaltyPerTurn:5});
   state.scored=result.scored;
   state.scoreNote=reason==='survivor'
-    ?'Điểm cờ đúng +1, cờ sai −1 được tính cho tất cả người chơi, kể cả người đã bị loại.'
+    ?'Điểm cờ đúng +10, cờ sai −10 được tính cho tất cả người chơi, kể cả người đã bị loại.'
     :reason==='everyone-eliminated'
       ?'Không còn người sống; cờ đúng/sai của mọi người vẫn được tính vào tổng điểm.'
       :result.allMarked
@@ -1713,7 +1729,7 @@ function applyServerMatchOutcome(){
   const results=state.onlineResults;
   if(!results||!Array.isArray(results.players))return;
   state.scored=true;
-  state.scoreNote=state.onlineScoreNote||'Điểm cờ đúng +1, cờ sai −1 được tính cho tất cả người chơi, kể cả người đã bị loại.';
+  state.scoreNote=state.onlineScoreNote||'Điểm cờ đúng +10, cờ sai −10 được tính cho tất cả người chơi, kể cả người đã bị loại.';
   for(const update of results.players){const player=playerById(update.id);if(!player)continue;player.place=update.place;player.rankPoints=update.rankPoints;player.correctFlags=update.correctFlags;player.wrongFlags=update.wrongFlags;player.flagScore=update.flagScore;player.skipPenalty=update.skipPenalty;player.score=update.totalScore;player.scoreBreakdown=update.scoreBreakdown;}
 }
 function finishGame(reason){
@@ -1797,7 +1813,7 @@ function showHelpOverlay(){
     '<div class="help-rule"><b>⏱️ Đồng hồ</b><span>Mỗi lượt có 60 giây. Nếu hết giờ mà không đào/cắm, nhân vật đứng yên, không bị loại nhưng bị trừ 5 điểm; sau đó chuyển lượt. Ván tối đa 10 phút, kết thúc sớm nếu chỉ còn một người sống.</span></div>'+
     '<div class="help-rule"><b>🔢 Bãi đáp</b><span>Năm ô xuất phát được chọn để có chỗ riêng cho tối đa 5 người. Tổng cộng 15–20 ô an toàn và liền mạch được mở trước, với hình dạng ngẫu nhiên thay vì khối vuông 3×3.</span></div>'+ 
     '<div class="help-rule"><b>'+(state.onlineMode?'⚙️ Cấu hình bản đồ':'🤖 Độ khó bot')+'</b><span>'+(state.onlineMode?'Chủ phòng đã chọn cấu hình. ':'')+DIFFICULTY_CONFIG[state.difficulty].label+(state.onlineMode?'':' · '+getThinkingDescription())+' · Bàn cờ '+SIZE+'×'+SIZE+' với '+MINE_COUNT+' quả mìn.</span></div>'+
-    '<div class="help-rule wide"><b>📊 Cách tính điểm ván</b><span>Điểm hạng: Hạng 1 +200, Hạng 2 +150, Hạng 3 +75, Hạng 4 +38, Hạng 5 +19. Tổng điểm ván = điểm hạng + điểm cờ − (5 × số lượt bỏ qua). Cờ đúng +1, cờ sai −1; điểm cờ luôn xét cho người còn sống lúc tổng kết, kể cả người sống sót cuối cùng. Bỏ lượt hết giờ bị phạt −5 điểm. Cờ của người bị loại vẫn ở trên bàn và vẫn được tính vào điểm của chủ cờ khi tổng kết.</span></div>'+
+    '<div class="help-rule wide"><b>📊 Cách tính điểm ván</b><span>Điểm hạng: Hạng 1 +200, Hạng 2 +150, Hạng 3 +75, Hạng 4 +38, Hạng 5 +19. Tổng điểm ván = điểm hạng + điểm cờ − (5 × số lượt bỏ qua). Cờ đúng +10, cờ sai −10; điểm cờ luôn xét cho người còn sống lúc tổng kết, kể cả người sống sót cuối cùng. Bỏ lượt hết giờ bị phạt −5 điểm. Cờ của người bị loại vẫn ở trên bàn và vẫn được tính vào điểm của chủ cờ khi tổng kết.</span></div>'+
     '</div><button id="closeHelpBtn" class="btn btn-primary" style="width:100%">QUAY LẠI TRẬN ĐẤU</button>';
   $('closeHelpBtn').addEventListener('click',closeHelpOverlay,{once:true});
 }

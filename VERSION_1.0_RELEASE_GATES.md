@@ -10,7 +10,7 @@
 - [ ] Máy chủ là nguồn sự thật cho mìn ẩn, lượt, đồng hồ, hành động hợp lệ, loại người chơi, thứ hạng, điểm và kết quả. Không client nào nhìn được tọa độ mìn chưa lộ.
 - [ ] Di chuyển nhiều lần trong lượt; đào, cắm cờ hoặc gỡ cờ của mình kết thúc lượt. Đấu cờ tiêu chuẩn từ chối thao tác gỡ cờ người khác mà không làm treo lượt.
 - [ ] Đồng hồ lượt 60 giây, phạt bỏ lượt −5 điểm và thời lượng trận do người tạo chọn (10/15/20/25/30 phút) hoạt động chính xác; timeout chỉ phạt một lần và chuyển đến người còn sống.
-- [ ] Trúng mìn loại đúng người đúng một lần; thứ hạng người bị loại theo thứ tự chết; điểm cuối = điểm hạng + cờ đúng − cờ sai − phạt bỏ lượt. Cờ còn trên bàn của cả người chết đều được tính.
+- [ ] Trúng mìn loại đúng người đúng một lần; thứ hạng người bị loại theo thứ tự chết; điểm cuối = điểm hạng + (10 × cờ đúng) − (10 × cờ sai) − phạt bỏ lượt. Mỗi cờ đúng +10, mỗi cờ sai −10; cờ còn trên bàn của cả người chết đều được tính.
 
 ## B. Kết thúc trận và giao diện
 

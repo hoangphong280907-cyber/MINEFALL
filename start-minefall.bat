@@ -16,6 +16,6 @@ if not exist "node_modules\ws\package.json" (
     exit /b 1
   )
 )
-echo Starting MINEFALL 1.0.0-rc.2...
+echo Starting MINEFALL 1.0.0-rc.3...
 call npm start
 pause

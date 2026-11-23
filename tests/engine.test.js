@@ -142,6 +142,27 @@ test('elimination order maps first death to last place and final death to second
   assert.equal(Engine.eliminatePlayer(players, deathOrder, 'D', 6), null);
 });
 
+test('each correct flag adds 10 points and each incorrect flag removes 10 points', () => {
+  const players = [player('A'), player('B'), player('C')];
+  const cells = [
+    { i: 0, mine: true, revealed: false, zone: false, flagOwner: 'A' },
+    { i: 1, mine: true, revealed: false, zone: false, flagOwner: 'A' },
+    { i: 2, mine: false, revealed: false, zone: false, flagOwner: 'A' },
+    { i: 3, mine: false, revealed: false, zone: false, flagOwner: 'B' }
+  ];
+  const result = Engine.calculateMatchResult({ players, cells, deathOrder: [], reason: 'timeout' });
+  const byId = Object.fromEntries(result.players.map(p => [p.id, p]));
+  assert.equal(byId.A.correctFlags, 2);
+  assert.equal(byId.A.wrongFlags, 1);
+  assert.equal(byId.A.flagScore, 10);
+  assert.equal(byId.A.scoreBreakdown.flagPoints, 10);
+  assert.equal(byId.A.totalScore, 210);
+  assert.equal(byId.B.correctFlags, 0);
+  assert.equal(byId.B.wrongFlags, 1);
+  assert.equal(byId.B.flagScore, -10);
+  assert.equal(byId.B.scoreBreakdown.flagPoints, -10);
+  assert.equal(byId.B.totalScore, 65);
+});
 test('sole survivor always receives flag points even when markable cells remain unflagged', () => {
   const players = [player('A', true, 3), player('B', false, 0, 1), player('C', false, 1, 2)];
   const cells = [
@@ -156,9 +177,9 @@ test('sole survivor always receives flag points even when markable cells remain 
   assert.equal(byId.A.rankPoints, 200);
   assert.equal(byId.A.correctFlags, 1);
   assert.equal(byId.A.wrongFlags, 0);
-  assert.equal(byId.A.flagScore, 1);
+  assert.equal(byId.A.flagScore, 10);
   assert.equal(byId.A.skipPenalty, 15);
-  assert.equal(byId.A.totalScore, 186);
+  assert.equal(byId.A.totalScore, 195);
   assert.equal(byId.B.place, 3);
   assert.equal(byId.C.place, 2);
 });
@@ -204,9 +225,9 @@ test('flags remaining on the board score for eliminated owners too', () => {
   assert.equal(byId.B.totalScore, 75 + 0 - 10);
   assert.equal(byId.C.correctFlags, 0);
   assert.equal(byId.C.wrongFlags, 1);
-  assert.equal(byId.C.flagScore, -1);
+  assert.equal(byId.C.flagScore, -10);
   assert.equal(byId.C.place, 2);
-  assert.equal(byId.C.totalScore, 150 - 1);
+  assert.equal(byId.C.totalScore, 150 - 10);
 });
 
 test('one survivor scores correct and incorrect flags even when not all markable cells are flagged', () => {

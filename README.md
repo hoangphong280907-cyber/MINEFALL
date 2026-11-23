@@ -1,4 +1,4 @@
-# MINEFALL 1.0.0-rc.2 — Browser Multiplayer Release Candidate
+# MINEFALL 1.0.0-rc.3 — Browser Multiplayer Release Candidate
 
 MINEFALL là game dò mìn PvP trên trình duyệt, có chế độ offline và phòng online 2–5 người. Bản này chuẩn bị quy trình kiểm thử tự động và triển khai public từ GitHub.
 
@@ -49,13 +49,14 @@ Blueprint mặc định dùng gói thử nghiệm miễn phí. Dịch vụ có t
 
 Báo cáo test trước cấu hình deploy ghi nhận **65 bài test tự động PASS**. Trong môi trường tạo gói hiện tại, `npm install` không hoàn tất do không phân giải được `registry.npmjs.org`; vì vậy chưa thể chạy `npm run smoke` hoặc xác nhận server thật khởi động trong môi trường này. GitHub Actions/host cần hoàn tất smoke test trước khi phát hành. Màn khoang đáp offline lấy kích thước và số mìn trực tiếp từ bàn cờ đã sinh; màn online lấy kích thước từ snapshot có thẩm quyền của server. Xem [TEST_REPORT_V1.0_RC2.md](./TEST_REPORT_V1.0_RC2.md).
 
-Repository ZIP không kèm `package-lock.json` vì môi trường đóng gói không truy cập được npm registry để tạo lockfile hợp lệ. Trên máy có Internet, chạy `npm install`; giữ lại `package-lock.json` mà npm tạo ra và commit cùng source. GitHub Actions và Render hiện dùng `npm install`, nên lần push đầu không bị chặn nếu lockfile chưa có, nhưng nên commit lockfile để các lần cài sau tái lập dependency ổn định hơn.
+Repository đã theo dõi `package-lock.json` để cố định dependency. Trên máy có Node.js 20 trở lên, dùng `npm ci` để cài đúng các phiên bản đã khóa. GitHub Actions cũng dùng `npm ci` trước khi chạy kiểm thử.
 
 ## Luật chơi hiện tại
 
 - Phòng riêng online hỗ trợ 2–5 người; kích thước bản đồ từ 8×8 đến 20×20.
 - Độ khó hiển thị Dễ / Trung bình / Khó; mật độ mìn tương ứng 25% / 35% / 50%.
 - Di chuyển không kết thúc lượt. Đào, cắm cờ hoặc gỡ cờ của mình kết thúc lượt.
+- Mỗi cờ còn trên bàn được tính khi kết thúc trận: cờ đúng +10 điểm, cờ sai −10 điểm; cờ của người bị loại vẫn tính cho đúng chủ sở hữu.
 - Lượt có thời hạn 60 giây; bỏ lượt bị phạt −5 điểm.
 - Thời lượng trận chọn được: 10, 15, 20, 25 hoặc 30 phút. Server là nguồn chuẩn cho đồng hồ và luật online.
 - Chế độ Standard không cho gỡ cờ của đối thủ. Chế độ Hỗn loạn chưa nằm trong bản RC này.

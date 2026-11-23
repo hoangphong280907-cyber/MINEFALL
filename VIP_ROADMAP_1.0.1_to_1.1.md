@@ -6,7 +6,7 @@ This roadmap filters the 20-page VIP proposal into releases. It preserves the pr
 
 - Online room capacity chosen by the host: 2, 3, 4, or 5 participants.
 - The host's selected arena theme remains authoritative for the room.
-- Match-end flag scoring is defined for every participant: correct flag +1, incorrect flag -1. Remaining flags owned by eliminated players still contribute to their personal totals; elimination order still determines their place.
+- Match-end flag scoring is defined for every participant: correct flag +10 points, incorrect flag -10 points. Remaining flags owned by eliminated players still contribute to their personal totals; elimination order still determines their place.
 - Phase 0.9C now implements server-authoritative MOVE/DIG/FLAG/UNFLAG, 60-second turn timers, selectable 10/15/20/25/30-minute match timers (10-minute default), −5 missed-turn penalty, death order, end reveal, final scoring for every player and 2–5 player room replay. It keeps hidden mine truth on the server until the match ends. The browser-to-browser WebSocket smoke test still needs to be run after installing `ws`.
 
 ## Version 1.0.1 — Stability and gameplay balance (highest priority)
@@ -29,7 +29,7 @@ This roadmap filters the 20-page VIP proposal into releases. It preserves the pr
 
    **Recommendation:** make these ranges configurable and test them before release. Keep the current short 3–5 second early-game pause. Use a progress metric that works on dense boards; do not wait for 60% of all cells to be revealed on a 50%-mine board. Spectator fast-forward should shorten waiting after the human is eliminated. The long Hard end-game range may need tuning if playtests show excessive idle time.
 4. **Default three bots, not a forced cap of three** (source idea, PDF p.1): set the offline default to 3 bots, but keep the existing player choice of 2–4 bots unless testing proves the other options cause pacing problems.
-5. **Scoring and rewards regression tests.** For every participant, final total = placement points + correct flags − incorrect flags − 5 × missed turns. Correct/incorrect flag counts include the participant's remaining flags even if eliminated; placement for eliminated players stays based on elimination order. The server, offline engine and summary UI must agree.
+5. **Scoring and rewards regression tests.** For every participant, final total = placement points + (10 × correct flags) − (10 × incorrect flags) − 5 × missed turns. Correct/incorrect flag counts include the participant's remaining flags even if eliminated; placement for eliminated players stays based on elimination order. The server, offline engine and summary UI must agree.
 
 ### Landing-zone change: do not ship in 1.0.1
 
@@ -98,7 +98,7 @@ The PDF proposes changing the start-zone geometry (p.1). The current engine now 
 - **1.1:** daily/weekly resets use server time, quest progress is idempotent, and rewards are granted once.
 
 
-## Future multiplayer modes — after the standard mode is stable
+## Future online and offline modes — after the standard mode is stable
 
 The current online mode is **Standard Flag Duel**. Enemy-flag removal is blocked on client and server; it must not be used as an undocumented side effect of standard play.
 
@@ -106,4 +106,10 @@ The current online mode is **Standard Flag Duel**. Enemy-flag removal is blocked
 2. **Team 2v2**: implement team assignment, team colors/markers, team survival/win conditions, scoring, friendly-fire/flag ownership rules, and results UI as a complete mode. Do not approximate this by merely allowing four people into a standard free-for-all.
 3. **Chaos**: permit removing/replacing an opponent's flag, using explicit mode-level server authorization. Add clear feedback on stolen/replaced flags and define how flag ownership/score is transferred. Never enable it globally.
 
-These are future gameplay modes, not features of Phase 0.9C.3. Build each mode with server-side validation and separate regression tests before exposing a mode selector to players.
+## Future offline modes — research after standard-mode stability
+
+1. **Solo practice / seeded challenge**: play alone on a reproducible board, compare attempts and learn without a network connection.
+2. **Bot challenge**: vary bot count, difficulty and objectives while keeping the current offline engine authoritative.
+3. **Time attack / survival**: prototype short score-attack rounds and longer endurance sessions; keep their scoring rules separate from Standard mode.
+
+For both online and offline modes, first define a shared mode specification (win condition, scoring, flag ownership, timers and allowed actions). Offline logic can execute locally; online logic must enforce the same rules on the server. These are research items, not features of RC3. Build and regression-test each mode before exposing a mode selector to players.

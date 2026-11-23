@@ -39,6 +39,14 @@ test('renderer module can be imported in Node without a browser DOM', () => {
   assert.equal(ArenaVisuals.version, '1.2.0');
 });
 
+test('coarse-pointer renderer idles between effects and caps active effects at 30 FPS', () => {
+  const source = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
+  assert.match(source, /const dpr=Math\.min\(window\.devicePixelRatio\|\|1,coarse\?1\.0:1\.65\)/);
+  assert.match(source, /if\(coarse&&instance\.lastFrame&&now-instance\.lastFrame<1000\/30\)/);
+  assert.match(source, /if\(!instance\.reducedMotion&&!coarse&&now-instance\.lastAmbient>240/);
+  assert.match(source, /const hasTransient=instance\.particles\.length\|\|instance\.bursts\.length/);
+  assert.match(source, /if\(\(!instance\.reducedMotion&&!coarse\)\|\|hasTransient\)/);
+});
 test('Canvas effects provide layered bomb impacts, movement trails, eliminations and victory bursts', () => {
   const source = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
   assert.match(source, /instance\.impact=function\(index,effect='standard',palette=null\)/);
