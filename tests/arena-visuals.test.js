@@ -47,6 +47,23 @@ test('coarse-pointer renderer idles between effects and caps active effects at 3
   assert.match(source, /const hasTransient=instance\.particles\.length\|\|instance\.bursts\.length/);
   assert.match(source, /if\(\(!instance\.reducedMotion&&!coarse\)\|\|hasTransient\)/);
 });
+test('coarse-pointer devices bypass live board canvases and keep the native CSS fallback', () => {
+  const originalDocument = global.document;
+  const originalMatchMedia = global.matchMedia;
+  try {
+    global.document = {};
+    global.matchMedia = query => ({ matches: query === '(pointer: coarse)' });
+    const wrap = { insertBefore() { assert.fail('Canvas renderer must not mutate the mobile board.'); } };
+    const grid = { classList: { add() { assert.fail('Mobile grid must not enter canvas-materialized mode.'); } } };
+    assert.equal(ArenaVisuals.mount(wrap, grid), null);
+  } finally {
+    if (originalDocument === undefined) delete global.document;
+    else global.document = originalDocument;
+    if (originalMatchMedia === undefined) delete global.matchMedia;
+    else global.matchMedia = originalMatchMedia;
+  }
+});
+
 test('Canvas effects provide layered bomb impacts, movement trails, eliminations and victory bursts', () => {
   const source = fs.readFileSync(path.join(root, 'arena-visuals.js'), 'utf8');
   assert.match(source, /instance\.impact=function\(index,effect='standard',palette=null\)/);

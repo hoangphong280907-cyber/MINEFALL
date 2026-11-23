@@ -935,6 +935,9 @@
 
   function mount(wrap,grid,options={}) {
     if(!wrap||!grid||typeof document==='undefined')return null;
+    // Phones use the native CSS tile renderer. Avoid allocating two full-board
+    // canvases or redrawing every tile on each state update on coarse pointers.
+    if(coarsePointer())return null;
     let instance=instances.get(wrap);
     if(!instance||instance.destroyed){instance=createInstance(wrap,grid,options);instances.set(wrap,instance);}
     if(options.theme)instance.setTheme(options.theme);
