@@ -49,7 +49,7 @@ test('main page declares install metadata and exposes a working install entry po
 });
 
 test('service worker caches the app shell, supports offline navigation and leaves server health/WebSocket uncached', () => {
-  assert.match(serviceWorker, /const CACHE_NAME = 'minefall-pwa-1\.0\.0-rc\.4'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'minefall-pwa-1\.0\.0-rc\.5'/);
   assert.match(serviceWorker, /cache\.addAll\(APP_SHELL\)/);
   assert.match(serviceWorker, /request\.mode === 'navigate'/);
   assert.match(serviceWorker, /caches\.match\('\/index\.html'\)/);
