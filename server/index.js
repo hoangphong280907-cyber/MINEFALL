@@ -28,6 +28,7 @@ const ALLOWED_EMOTES = new Map([['🤔','Đang suy nghĩ'],['😎','Tự tin'],[
 const PUBLIC_FILES = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
+  ['/favicon.ico', ['favicon.ico', 'image/x-icon']],
   ['/manifest.webmanifest', ['manifest.webmanifest', 'application/manifest+json; charset=utf-8']],
   ['/service-worker.js', ['service-worker.js', 'text/javascript; charset=utf-8']],
   ['/pwa.js', ['pwa.js', 'text/javascript; charset=utf-8']],
