@@ -1,3 +1,11 @@
+[1.0.0-rc.4 — installable Progressive Web App]
+- Added a web app manifest, MINEFALL home-screen icons, theme metadata and safe-area-aware layout for mobile standalone display.
+- Added an install button for supported Chromium browsers and guided Add to Home Screen steps for iPhone/iPad Safari.
+- Added a scoped service worker that pre-caches the application shell, saves same-origin game assets for offline reuse, and serves the cached UI when a navigation occurs without a network connection.
+- Kept /health and the /ws multiplayer transport outside the service-worker cache. PvP still requires Internet and the Node.js server; only the app shell and previously fetched assets are available offline.
+- Added PWA manifest/install/service-worker regression tests and expanded the HTTP/WebSocket smoke test to verify PWA routes and icons.
+- Verification in this workspace: 92/92 automated tests passed; inline JavaScript syntax check, static asset audit, JavaScript syntax checks and live HTTP/WebSocket/PWA smoke test passed. Real-device installation and offline behavior still require a browser/device check.
+
 [1.0.0-rc.3 — flag scoring, player-colored default flags and mobile performance]
 - Changed final flag scoring to +10 points per correct flag and −10 points per incorrect flag. The same server-authoritative engine is used for offline and online results; placement and missed-turn penalties remain unchanged.
 - The default classic flag is now drawn in its owner's player color. Equipped country/event flag cosmetics keep their original artwork.

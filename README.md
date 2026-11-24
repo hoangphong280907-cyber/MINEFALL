@@ -1,6 +1,6 @@
-# MINEFALL 1.0.0-rc.3 — Browser Multiplayer Release Candidate
+# MINEFALL 1.0.0-rc.4 — Installable PWA Multiplayer Release Candidate
 
-MINEFALL là game dò mìn PvP trên trình duyệt, có chế độ offline và phòng online 2–5 người. Bản này chuẩn bị quy trình kiểm thử tự động và triển khai public từ GitHub.
+MINEFALL là game dò mìn PvP dạng **Progressive Web App (PWA)**, có chế độ offline và phòng online 2–5 người. Người chơi có thể cài game lên màn hình chính/desktop từ trình duyệt hỗ trợ; ứng dụng lưu bộ giao diện để mở lại khi mất mạng.
 
 > **Trạng thái:** Release Candidate, chưa ký phát hành v1.0 chính thức. Bộ test tự động không thay thế kiểm thử trận online giữa nhiều trình duyệt/thiết bị. Xem [VERSION_1.0_RELEASE_GATES.md](./VERSION_1.0_RELEASE_GATES.md).
 
@@ -15,7 +15,7 @@ npm run smoke
 npm start
 ```
 
-Mở `http://localhost:3000`. Trang `/health` trả về trạng thái server và số phiên bản. Lệnh `npm run smoke` kiểm tra HTTP, các asset chính và bắt tay WebSocket.
+Mở `http://localhost:3000`. Trên localhost, service worker có thể hoạt động để thử PWA. Trang `/health` trả về trạng thái server và số phiên bản. Lệnh `npm run smoke` kiểm tra HTTP, các asset chính và bắt tay WebSocket.
 
 Trên Windows, `start-minefall.bat` cũng có thể cài dependency còn thiếu và chạy server. Khi chơi qua Internet, không cần mở cửa sổ Cloudflare Tunnel nếu đã triển khai public theo hướng dẫn bên dưới.
 
@@ -32,6 +32,7 @@ GitHub Pages chỉ phục vụ file tĩnh; MINEFALL cần một server Node.js c
 3. Chờ build/deploy thành công. Render sẽ khởi động `npm start`, kiểm tra `/health` và cấp một địa chỉ HTTPS công khai.
 4. Mở địa chỉ HTTPS đó. Tạo phòng và tham gia bằng một trình duyệt/thiết bị khác để kiểm tra WebSocket qua `wss://`.
 5. Mỗi lần push code lên nhánh chính, Render có thể tự triển khai bản cập nhật theo cấu hình dịch vụ; GitHub Actions sẽ chạy kiểm tra cú pháp, audit asset, unit tests và server smoke test.
+6. Mở URL HTTPS trên điện thoại/máy tính. Dùng nút **Cài app** trong thanh trên cùng hoặc menu trình duyệt. Trên iPhone/iPad, mở bằng Safari → Chia sẻ → Thêm vào màn hình chính.
 
 Chi tiết thao tác được ghi trong [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md).
 
@@ -62,6 +63,14 @@ Repository đã theo dõi `package-lock.json` để cố định dependency. Tr�
 - Chế độ Standard không cho gỡ cờ của đối thủ. Chế độ Hỗn loạn chưa nằm trong bản RC này.
 - Cosmetic không được thay đổi xác suất mìn, khả năng nhìn, tốc độ, thời gian hành động hoặc điểm số.
 
+## PWA và khả năng offline
+
+- MINEFALL có `manifest.webmanifest`, icon cài đặt, nút cài app và service worker. Giao diện cần được mở ít nhất một lần khi có mạng để cache app shell.
+- Khi mất mạng, service worker có thể phục vụ lại giao diện và các script/style đã cache; chế độ chơi offline với bot có thể hoạt động sau khi app shell đã được lưu trên thiết bị. Asset cosmetic chưa tải lần nào có thể chưa dùng được khi offline.
+- **PvP, tạo/tham gia phòng và đồng bộ trận vẫn cần Internet cùng server Node.js hoạt động.** PWA không biến WebSocket thành kết nối offline.
+- Cài đặt trên thiết bị thật cần HTTPS; `localhost` được trình duyệt xem là môi trường phát triển an toàn.
+- PWA không bổ sung tài khoản, cloud save hay đồng bộ xu/vật phẩm giữa thiết bị.
+
 ## Dữ liệu và giới hạn hiện tại
 
 Xu, vật phẩm đã sở hữu và loadout được lưu bằng `localStorage` trên trình duyệt hiện tại. Bản này chưa có tài khoản người dùng, cloud save, chuyển tiến trình giữa thiết bị, leaderboard toàn cầu hay lưu phòng qua lần server khởi động lại.
@@ -69,6 +78,7 @@ Xu, vật phẩm đã sở hữu và loadout được lưu bằng `localStorage`
 ## Cấu trúc quan trọng
 
 - `index.html`, `online.css`, `online-client.js`: giao diện, shop, client multiplayer.
+- `manifest.webmanifest`, `service-worker.js`, `pwa.js`, `assets/pwa/`: cài đặt PWA, offline app shell và biểu tượng ứng dụng.
 - `engine.js`: luật chơi, tạo bản đồ và điểm.
 - `cosmetics.js`: catalogue cosmetic dùng chung cho browser/server.
 - `server/index.js`, `server/room-manager.js`: HTTP, WebSocket và authoritative room state.

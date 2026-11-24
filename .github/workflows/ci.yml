@@ -32,6 +32,8 @@ jobs:
           node --check cosmetics.js
           node --check arena-visuals.js
           node --check online-client.js
+          node --check pwa.js
+          node --check service-worker.js
           node --check server/index.js
           node --check server/room-manager.js
           node --check scripts/check-inline-js.js
