@@ -1,0 +1,28 @@
+{
+  "id": "/",
+  "name": "MINEFALL — Think. Move. Survive.",
+  "short_name": "MINEFALL",
+  "description": "MINEFALL multiplayer minesweeper game.",
+  "lang": "vi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a1017",
+  "theme_color": "#0a1017",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/assets/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
