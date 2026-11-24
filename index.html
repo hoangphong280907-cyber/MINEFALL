@@ -317,6 +317,17 @@ body.online-session-active .top-right { gap: 0; }
 /* Hide native scrollbars while keeping wheel, touch, and trackpad scrolling enabled. */
 * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
 *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+
+/* MINEFALL mobile performance profile: keep the board responsive on touch/compact devices. */
+@media (pointer:coarse), (max-width:820px){
+  .board-wrap{box-shadow:none!important}
+  .cell{transition:none!important;box-shadow:none!important;filter:none!important}
+  .cell.reveal-pop,.cell.reveal-pop .number,.cell.end-reveal-flip,.cell.flag-pop,.cell.flag-remove-pop,.cell.mine-flash,.cell.dig-feedback:before{animation:none!important}
+  .pawn{filter:none!important}
+  .pawn-sprite{animation:none!important;filter:none!important}
+  .cell .flag-image{filter:none!important}
+  .end-sequence-fx .confetti-piece{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -810,11 +821,14 @@ function renderCell(i){
   el.title='Ô '+coord(i)+(cell.zone?' · Vùng đáp an toàn':visible&&!cell.mine?': '+cell.adj:cell.flagOwner?' · Có cờ':cell.endFlagWrong?' · Cờ sai':' · Chưa mở');
   const visualNow=cell.exploded?'exploded':visible?'revealed':'concealed';
   if(state.started&&!state.ended&&visible&&!cell.zone&&!cell.mine&&priorVisual==='concealed'){
-    el.classList.add('reveal-pop');
     const wave=state.revealWave;
-    if(wave&&wave.cells&&wave.cells.has(i)){
-      const a=rc(wave.origin),b=rc(i),distance=Math.max(Math.abs(a.r-b.r),Math.abs(a.c-b.c));
-      el.style.setProperty('--reveal-delay',Math.min(.18,distance*.012)+'s');
+    const massReveal=!!(wave&&wave.cells&&wave.cells.size>20);
+    if(!isMobilePerformanceMode()||!massReveal){
+      el.classList.add('reveal-pop');
+      if(wave&&wave.cells&&wave.cells.has(i)){
+        const a=rc(wave.origin),b=rc(i),distance=Math.max(Math.abs(a.r-b.r),Math.abs(a.c-b.c));
+        el.style.setProperty('--reveal-delay',Math.min(.18,distance*.012)+'s');
+      }else el.style.removeProperty('--reveal-delay');
     }else el.style.removeProperty('--reveal-delay');
   }
   if(state.started&&!state.ended&&cell.flagOwner&&priorFlagOwner!==cell.flagOwner) el.classList.add('flag-pop');
@@ -1137,9 +1151,14 @@ function showEliminationEffect(player,index){
   arenaVisualInstance?.eliminate(index,item.effect||'standard',player.color||null);
 }
 
+function isMobilePerformanceMode(){
+  const touch=typeof navigator!=='undefined'&&Number(navigator.maxTouchPoints||0)>0;
+  const coarse=!!(window.matchMedia&&window.matchMedia('(pointer: coarse)').matches);
+  const compact=!!(window.matchMedia&&window.matchMedia('(max-width: 820px)').matches);
+  return touch||coarse||compact;
+}
 function getMoveStepDelay(pathLength){
-  const coarse=window.matchMedia&&window.matchMedia('(pointer:coarse)').matches;
-  if(coarse)return Math.max(42,Math.min(62,Math.round(920/Math.max(1,pathLength))));
+  if(isMobilePerformanceMode())return Math.max(42,Math.min(62,Math.round(920/Math.max(1,pathLength))));
   return Math.max(64,Math.min(94,Math.round(1500/Math.max(1,pathLength))));
 }
 function clearMovementPathVisuals(path=state.movementPath){
@@ -1401,11 +1420,11 @@ function solveFrontierProbabilities(constraints){
   for(const start of adjacency.keys()){
     if(visited.has(start))continue;
     const queue=[start],component=[];visited.add(start);
-    while(queue.length){const current=queue.shift();component.push(current);for(const next of adjacency.get(current)||[]){if(!visited.has(next)){visited.add(next);queue.push(next);}}}
+    for(let head=0;head<queue.length;head++){const current=queue[head];component.push(current);for(const next of adjacency.get(current)||[]){if(!visited.has(next)){visited.add(next);queue.push(next);}}}
     const index=new Map(component.map((i,n)=>[i,n]));
     const rawLocal=constraints.filter(c=>[...c.cells].some(i=>index.has(i)));
     const local=rawLocal.map(c=>({positions:[...c.cells].map(i=>index.get(i)).filter(n=>n!==undefined),mines:c.mines}));
-    const exactLimit=(window.matchMedia&&window.matchMedia('(pointer: coarse)').matches)?12:18;
+    const exactLimit=isMobilePerformanceMode()?10:18;
     if(component.length<=exactLimit){
       const localMasks=local.map(c=>({mask:c.positions.reduce((mask,pos)=>mask|(1<<pos),0),mines:c.mines,size:c.positions.length}));
       const mineHits=new Array(component.length).fill(0);let solutions=0;
@@ -1441,8 +1460,11 @@ function candidateStrategicValue(i,risk,bot){
   let edgeWeight=cornerPenalty;
   if(bot.personality==='aggressive'){informationBonus*=1.55;edgeWeight*=.45;}
   if(bot.personality==='cautious'){informationBonus*=.85;edgeWeight*=1.2;}
-  const path=findPathBFS(bot.pos,i);
-  const pathPenalty=path.length*0.004;
+  // All eight adjacent cells are valid moves and no path blockers exist, so the
+  // shortest route length is Chebyshev distance. Avoid a full BFS for every candidate.
+  const botRow=Math.floor(bot.pos/SIZE),botCol=bot.pos%SIZE;
+  const pathDistance=Math.max(Math.abs(r-botRow),Math.abs(c-botCol));
+  const pathPenalty=pathDistance*0.004;
   return risk*1000+centerDistance*0.16+edgeWeight+pathPenalty-informationBonus;
 }
 function botChooseActionHard(bot){
@@ -1666,7 +1688,7 @@ function createEndSequenceFx(reason,winner){
   const kicker=document.createElement('div');kicker.className='kicker';kicker.textContent=celebrating?'CHIẾN THẮNG':'TIẾT LỘ MÌN';
   const title=document.createElement('strong');title.textContent=celebrating?'👑 '+winner.name:'MỞ TOÀN BỘ BẢN ĐỒ';
   banner.append(kicker,title);fx.appendChild(banner);
-  if(celebrating){
+  if(celebrating&&!isMobilePerformanceMode()){
     const colors=celebration.palette||['#ffd34e','#63e0d5','#ff687b','#a78bfa','#f8fbff','#82e6a7','#ffa65b'];
     for(let i=0;i<64;i++){
       const piece=document.createElement('span');
@@ -1687,16 +1709,17 @@ function createEndSequenceFx(reason,winner){
 }
 function revealEndTile(i){
   const cell=state.cells[i];if(!cell||cell.exploded)return;
+  const mobileLite=isMobilePerformanceMode();
   let wrongOwner=null;
   if(cell.flagOwner&&!cell.mine){
-    wrongOwner=playerById(cell.flagOwner);cell.endFlagWrong=true;cell.endWrongMarkVisible=false;
+    wrongOwner=playerById(cell.flagOwner);cell.endFlagWrong=true;cell.endWrongMarkVisible=mobileLite;
     if(wrongOwner)wrongOwner.flagsOwned.delete(i);
     cell.flagOwner=null;
   }
-  cell.endRevealed=true;cell.endRevealFlip=true;
+  cell.endRevealed=true;cell.endRevealFlip=!mobileLite;
   renderCell(i);
-  const el=boardGrid.children[i];
-  if(wrongOwner){
+  if(wrongOwner&&!mobileLite){
+    const el=boardGrid.children[i];
     const flyingFlag=document.createElement('span');const flagItem=getShopItem('flag',wrongOwner.flag||profile.equipped.flag||'flag-classic');flyingFlag.className='flag-bounce';flyingFlag.textContent=flagItem.emoji;flyingFlag.style.color=wrongOwner.color;el.appendChild(flyingFlag);
     const token=state.matchToken;
     const markTimer=setTimeout(()=>{
@@ -1716,10 +1739,24 @@ function runEndRevealAnimation(reason,headline){
   const {r:sr,c:sc}=state.spawn;
   queue.sort((a,b)=>{const A=rc(a),B=rc(b);const da=Math.max(Math.abs(A.r-sr),Math.abs(A.c-sc));const db=Math.max(Math.abs(B.r-sr),Math.abs(B.c-sc));return da-db||a-b;});
   const revealSpan=5600;
-  queue.forEach((i,index)=>{
-    const delay=queue.length<=1?0:Math.round(revealSpan*index/(queue.length-1));
-    state.endRevealTimers.push(setTimeout(()=>{if(token!==state.matchToken||!state.ended)return;revealEndTile(i);},delay));
-  });
+  if(isMobilePerformanceMode()){
+    // Pace mobile updates in small batches instead of creating one timer and one flip per tile.
+    const batchSize=Math.max(1,Math.ceil(queue.length/48));
+    const batchDelay=Math.max(40,Math.round(revealSpan/Math.max(1,Math.ceil(queue.length/batchSize))));
+    let cursor=0;
+    const revealBatch=()=>{
+      if(token!==state.matchToken||!state.ended)return;
+      const stop=Math.min(queue.length,cursor+batchSize);
+      while(cursor<stop)revealEndTile(queue[cursor++]);
+      if(cursor<queue.length)state.endRevealTimers.push(setTimeout(revealBatch,batchDelay));
+    };
+    revealBatch();
+  }else{
+    queue.forEach((i,index)=>{
+      const delay=queue.length<=1?0:Math.round(revealSpan*index/(queue.length-1));
+      state.endRevealTimers.push(setTimeout(()=>{if(token!==state.matchToken||!state.ended)return;revealEndTile(i);},delay));
+    });
+  }
   const finalizeTimer=setTimeout(()=>{
     if(token!==state.matchToken||!state.ended)return;
     state.endRevealTimers=[];state.revealingEnd=false;state.endRevealComplete=true;

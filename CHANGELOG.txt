@@ -1,3 +1,11 @@
+[1.0.0-rc.5 — mobile performance hardening]
+- Detect touch-capable devices using maxTouchPoints, coarse-pointer media query and compact viewport width; bypass the live Canvas board renderer on touch hardware.
+- Replace per-candidate bot pathfinding BFS with the exact Chebyshev distance for eight-direction movement on an unobstructed board; this avoids repeatedly traversing the same board during hard-AI candidate scoring.
+- Tighten exact frontier enumeration on touch devices and remove an avoidable Array.shift() queue cost.
+- Batch end-of-match board reveals on mobile, remove per-tile flip/flying-flag timers and suppress the 64-piece confetti layer on touch devices.
+- Skip per-cell reveal-pop animations when a mobile flood-fill opens a large group of tiles; reduce board shadows, filters and sprite animation on compact/touch layouts.
+- Bump the service-worker cache namespace so installed RC4 clients refresh to the RC5 app shell after deployment.
+
 [1.0.0-rc.4 — installable Progressive Web App]
 - Added a web app manifest, MINEFALL home-screen icons, theme metadata and safe-area-aware layout for mobile standalone display.
 - Added an install button for supported Chromium browsers and guided Add to Home Screen steps for iPhone/iPad Safari.

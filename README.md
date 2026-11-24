@@ -1,4 +1,4 @@
-# MINEFALL 1.0.0-rc.4 — Installable PWA Multiplayer Release Candidate
+# MINEFALL 1.0.0-rc.5 — Installable PWA Multiplayer Release Candidate
 
 MINEFALL là game dò mìn PvP dạng **Progressive Web App (PWA)**, có chế độ offline và phòng online 2–5 người. Người chơi có thể cài game lên màn hình chính/desktop từ trình duyệt hỗ trợ; ứng dụng lưu bộ giao diện để mở lại khi mất mạng.
 
