@@ -95,6 +95,7 @@ async function main() {
       ['/arena-visuals.js', 'javascript'],
       ['/arena-visuals.css', 'text/css'],
       ['/online.css', 'text/css'],
+      ['/favicon.ico', 'image/x-icon'],
       ['/manifest.webmanifest', 'application/manifest+json'],
       ['/service-worker.js', 'javascript'],
       ['/pwa.js', 'javascript'],
