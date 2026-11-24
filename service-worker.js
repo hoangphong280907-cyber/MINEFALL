@@ -5,6 +5,7 @@ const CACHE_NAME = 'minefall-pwa-1.0.0-rc.4';
 const APP_SHELL = [
   '/',
   '/index.html',
+  '/favicon.ico',
   '/manifest.webmanifest',
   '/pwa.js',
   '/online.css',
