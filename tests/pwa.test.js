@@ -32,6 +32,9 @@ test('PWA manifest describes an installable standalone MINEFALL app with valid l
     assert.equal(png.readUInt32BE(20), size, `${icon.src} height`);
   }
   assert.ok(fs.existsSync(path.join(root, 'assets/pwa/apple-touch-icon.png')));
+  const favicon = fs.readFileSync(path.join(root, 'favicon.ico'));
+  assert.equal(favicon.toString('hex', 0, 4), '00000100');
+  assert.ok(favicon.length > 1000);
 });
 
 test('main page declares install metadata and exposes a working install entry point', () => {
@@ -56,7 +59,7 @@ test('service worker caches the app shell, supports offline navigation and leave
 
 test('Node server allowlists PWA manifest, service worker, install helper and icon assets', () => {
   for (const route of [
-    '/manifest.webmanifest', '/service-worker.js', '/pwa.js',
+    '/manifest.webmanifest', '/service-worker.js', '/pwa.js', '/favicon.ico',
     '/assets/pwa/icon-192.png', '/assets/pwa/icon-512.png', '/assets/pwa/apple-touch-icon.png'
   ]) {
     assert.ok(server.includes(`['${route}'`), `${route} is publicly allowlisted`);
