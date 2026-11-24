@@ -61,7 +61,7 @@ test('hard bot exact frontier enumeration is bounded on touch devices and its qu
 test('mobile end reveal is paced in batches and avoids per-cell flip timers/confetti DOM', () => {
   const reveal = section(html, 'function runEndRevealAnimation', 'function applyServerMatchOutcome');
   assert.match(reveal, /if\\(isMobilePerformanceMode\\(\\)\\)/);
-  assert.match(reveal, /const batchSize=Math\\.max\\(1,Math\\.ceil\\(queue\\.length\\/48\\)\\)/);
+  assert.ok(reveal.includes('const batchSize=Math.max(1,Math.ceil(queue.length/48))'));
   assert.match(reveal, /const revealBatch=\\(\\)=>/);
   assert.match(html, /if\\(celebrating&&!isMobilePerformanceMode\\(\\)\\)/);
   assert.match(html, /const mobileLite=isMobilePerformanceMode\\(\\)/);
