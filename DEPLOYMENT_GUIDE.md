@@ -21,7 +21,7 @@ Không triển khai riêng `index.html` trên GitHub Pages cho bản online hi�
 2. Chọn tạo Blueprint, rồi chọn repository.
 3. Render đọc `render.yaml`; xác nhận tên dịch vụ `minefall-online` và kế hoạch hiện được khai báo trong file.
 4. Khởi chạy deploy. Build command là `npm install --no-audit --no-fund`; start command là `npm start`; health check là `/health`.
-5. Khi deploy thành công, mở URL HTTPS do Render cung cấp. Kiểm tra `/health` trả JSON có `status: "ok"` và `version: "1.0.0-rc.2"`.
+5. Khi deploy thành công, mở URL HTTPS do Render cung cấp. Kiểm tra `/health` trả JSON có `status: "ok"` và `version: "1.0.0-rc.4"`.
 
 ## C. Kiểm tra game public
 
@@ -35,13 +35,21 @@ Không triển khai riêng `index.html` trên GitHub Pages cho bản online hi�
 
 Gói miễn phí có thể tự ngủ khi không có lưu lượng và khởi động lại khi được gọi. Game hiện dùng room state trong bộ nhớ server; nếu dịch vụ bị khởi động lại thì phòng/trận đang chạy có thể mất. Cần dịch vụ luôn hoạt động và thiết kế lưu trạng thái bền vững nếu muốn bảo đảm các trận dài không bị mất.
 
-## E. Mỗi lần cập nhật
+## E. Cài MINEFALL như ứng dụng (PWA)
+
+1. Đảm bảo dịch vụ public có HTTPS. PWA/service worker không được cài đầy đủ từ một địa chỉ HTTP thông thường.
+2. Mở URL Render trên Chrome/Edge ở Android hoặc desktop. Nhấn nút **Cài app** trên thanh đầu trang, hoặc dùng mục Install/Add to Home Screen trong menu trình duyệt.
+3. Trên iPhone/iPad, mở URL bằng Safari, nhấn **Chia sẻ** → **Thêm vào màn hình chính** → **Thêm**.
+4. Sau lần mở đầu tiên có Internet, service worker lưu app shell và các asset đã tải. Có thể mở lại giao diện khi offline; PvP/WebSocket vẫn cần Internet và server.
+5. Sau khi cập nhật giao diện, service worker sẽ thay cache theo phiên bản `CACHE_NAME` trong `service-worker.js`. Khi có thay đổi app shell lớn, tăng hậu tố cache để loại bỏ cache cũ an toàn.
+
+## F. Mỗi lần cập nhật
 
 - Tạo thay đổi trên nhánh, chạy `npm test` và `npm run smoke` sau khi cài dependency.
 - Push hoặc merge vào `main`.
 - Đợi GitHub Actions xanh và Render hoàn tất deploy.
 - Thử lại một trận online giữa hai trình duyệt trước khi coi bản cập nhật là ổn định.
 
-## F. Rollback
+## G. Rollback
 
 Nếu bản mới gây lỗi, dùng mục Rollback trong Render để quay về deploy trước đó hoặc revert commit lỗi rồi push lại. Giữ lại log GitHub Actions và kết quả test cho bản đã phát hành.
