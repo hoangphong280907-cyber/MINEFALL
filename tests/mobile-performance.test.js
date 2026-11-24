@@ -19,16 +19,16 @@ function section(source, start, end) {
 
 test('mobile performance mode detects touch hardware even when pointer media queries are unreliable', () => {
   const helper = section(html, 'function isMobilePerformanceMode()', 'function getMoveStepDelay');
-  assert.match(helper, /navigator\\.maxTouchPoints/);
-  assert.match(helper, /\\(pointer: coarse\\)/);
-  assert.match(helper, /max-width: 820px/);
-  assert.match(arena, /navigator\\.maxTouchPoints/);
+  assert.ok(helper.includes('navigator.maxTouchPoints'));
+  assert.ok(helper.includes('(pointer: coarse)'));
+  assert.ok(helper.includes('(max-width: 820px)'));
+  assert.ok(arena.includes('navigator.maxTouchPoints'));
 });
 
 test('hard bot strategic path cost uses constant-time Chebyshev distance instead of one BFS per candidate', () => {
   const scorer = section(html, 'function candidateStrategicValue', 'function botChooseActionHard');
-  assert.match(scorer, /Math\\.max\\(Math\\.abs\\(r-botRow\\),Math\\.abs\\(c-botCol\\)\\)/);
-  assert.doesNotMatch(scorer, /findPathBFS/);
+  assert.ok(scorer.includes('Math.max(Math.abs(r-botRow),Math.abs(c-botCol))'));
+  assert.ok(!scorer.includes('findPathBFS'));
 });
 
 test('Chebyshev distance equals the engine shortest-path length for eight-direction unobstructed movement', () => {
@@ -53,22 +53,22 @@ test('Chebyshev distance equals the engine shortest-path length for eight-direct
 
 test('hard bot exact frontier enumeration is bounded on touch devices and its queue avoids shift()', () => {
   const solver = section(html, 'function solveFrontierProbabilities', 'function findPathBFS');
-  assert.match(solver, /const exactLimit=isMobilePerformanceMode\\(\\)\\?10:18/);
-  assert.match(solver, /for\\(let head=0;head<queue\\.length;head\\+\\+\\)/);
-  assert.doesNotMatch(solver, /queue\\.shift\\(\\)/);
+  assert.ok(solver.includes('const exactLimit=isMobilePerformanceMode()?10:18'));
+  assert.ok(solver.includes('for(let head=0;head<queue.length;head++)'));
+  assert.ok(!solver.includes('queue.shift()'));
 });
 
 test('mobile end reveal is paced in batches and avoids per-cell flip timers/confetti DOM', () => {
   const reveal = section(html, 'function runEndRevealAnimation', 'function applyServerMatchOutcome');
-  assert.match(reveal, /if\\(isMobilePerformanceMode\\(\\)\\)/);
+  assert.ok(reveal.includes('if(isMobilePerformanceMode())'));
   assert.ok(reveal.includes('const batchSize=Math.max(1,Math.ceil(queue.length/48))'));
-  assert.match(reveal, /const revealBatch=\\(\\)=>/);
-  assert.match(html, /if\\(celebrating&&!isMobilePerformanceMode\\(\\)\\)/);
-  assert.match(html, /const mobileLite=isMobilePerformanceMode\\(\\)/);
+  assert.ok(reveal.includes('const revealBatch=()=>'));
+  assert.ok(html.includes('if(celebrating&&!isMobilePerformanceMode())'));
+  assert.ok(html.includes('const mobileLite=isMobilePerformanceMode()'));
 });
 
 test('large chain reveals skip per-cell pop animations on mobile', () => {
   const renderer = section(html, 'function renderCell(i)', 'let arenaVisualInstance=null');
-  assert.match(renderer, /const massReveal=!!\\(wave&&wave\\.cells&&wave\\.cells\\.size>20\\)/);
-  assert.match(renderer, /!isMobilePerformanceMode\\(\\)\\|\\|!massReveal/);
+  assert.ok(renderer.includes('const massReveal=!!(wave&&wave.cells&&wave.cells.size>20)'));
+  assert.ok(renderer.includes('!isMobilePerformanceMode()||!massReveal'));
 });
