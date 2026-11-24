@@ -28,6 +28,12 @@ const ALLOWED_EMOTES = new Map([['🤔','Đang suy nghĩ'],['😎','Tự tin'],[
 const PUBLIC_FILES = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
+  ['/manifest.webmanifest', ['manifest.webmanifest', 'application/manifest+json; charset=utf-8']],
+  ['/service-worker.js', ['service-worker.js', 'text/javascript; charset=utf-8']],
+  ['/pwa.js', ['pwa.js', 'text/javascript; charset=utf-8']],
+  ['/assets/pwa/icon-192.png', ['assets/pwa/icon-192.png', 'image/png']],
+  ['/assets/pwa/icon-512.png', ['assets/pwa/icon-512.png', 'image/png']],
+  ['/assets/pwa/apple-touch-icon.png', ['assets/pwa/apple-touch-icon.png', 'image/png']],
   ['/engine.js', ['engine.js', 'text/javascript; charset=utf-8']],
   ['/cosmetics.js', ['cosmetics.js', 'text/javascript; charset=utf-8']],
   ['/online-client.js', ['online-client.js', 'text/javascript; charset=utf-8']],
@@ -265,7 +271,8 @@ const server = http.createServer((req, res) => {
       'content-type': contentType,
       'cache-control': 'no-store',
       'x-content-type-options': 'nosniff',
-      'referrer-policy': 'same-origin'
+      'referrer-policy': 'same-origin',
+      ...(url.pathname === '/service-worker.js' ? { 'service-worker-allowed': '/' } : {})
     });
     res.end(req.method === 'HEAD' ? undefined : data);
   });
