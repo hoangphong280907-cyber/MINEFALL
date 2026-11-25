@@ -25,6 +25,21 @@ for (const category of ['flag', 'bomb']) {
 for (const item of catalog.skin || []) {
   if (!/^skin-[a-z0-9-]+$/.test(item.id)) {
     errors.push(`skin catalog has an unsafe/nonconforming ID: ${JSON.stringify(item.id)}`);
+    continue;
+  }
+  const relativePath = `assets/skins/${item.id}.png`;
+  const filePath = path.join(__dirname, '..', relativePath);
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    errors.push(`skin/${item.id}: missing PNG at ${relativePath}`);
+    continue;
+  }
+  const png = fs.readFileSync(filePath);
+  if (png.length < 24 || png.toString('hex', 0, 8) !== '89504e470d0a1a0a') {
+    errors.push(`skin/${item.id}: asset is not a valid PNG`);
+    continue;
+  }
+  if (png.readUInt32BE(16) !== 512 || png.readUInt32BE(20) !== 512) {
+    errors.push(`skin/${item.id}: expected 512x512 PNG, got ${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`);
   }
 }
 
@@ -33,4 +48,4 @@ if (errors.length) {
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log('PASS: all catalog flag/bomb SVG assets exist and skin IDs are safe.');
+console.log('PASS: all catalog SVG assets exist; every skin PNG exists, is valid and measures 512x512.');
