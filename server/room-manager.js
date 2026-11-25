@@ -371,6 +371,37 @@ class RoomManager {
 
     if (player.pos !== index) throw new Error('Hãy di chuyển nhân vật đến ô đó trước khi hành động.');
     if (cell.zone) throw new Error('Ô xuất phát trong bãi đáp an toàn không thể đào hoặc cắm cờ.');
+
+    if (command.type === 'CHORD') {
+      const result = Engine.revealChord(state.cells, index, state.boardSize);
+      if (!result.ok) throw new Error(result.reason || 'Không thể mở vùng từ ô số này.');
+      room.seenCommandIds.add(command.commandId);
+      if (result.mine) {
+        for (const mineIndex of result.mineIndices) state.cells[mineIndex].explodedBy = player.id;
+        const mineIndex = result.mineIndices[0];
+        const eliminated = Engine.eliminatePlayer(state.players, state.deathOrder, player.id, mineIndex);
+        state.lastEvent = {
+          type: 'eliminated', playerId: player.id, index: mineIndex,
+          cause: 'chord', anchorIndex: index, openedCount: result.openedCount,
+          openedIndices: result.newlyOpened, mineIndices: result.mineIndices,
+          deathOrder: eliminated?.deathOrder, at: now
+        };
+        state.lastAction = { ...state.lastEvent };
+        room.lastEvent = state.lastEvent;
+        this._resolveAfterDeath(room, player.id);
+        return { room, accepted: true, action: 'eliminated', index: mineIndex, openedCount: result.openedCount };
+      }
+      state.lastEvent = {
+        type: 'chord', playerId: player.id, index,
+        flagCount: result.flagCount, openedCount: result.openedCount,
+        additionalOpened: result.additionalOpened, openedIndices: result.newlyOpened, at: now
+      };
+      state.lastAction = { ...state.lastEvent };
+      room.lastEvent = state.lastEvent;
+      this._advanceTurn(room, player.id);
+      return { room, accepted: true, action: 'chord', index, openedCount: result.openedCount };
+    }
+
     if (command.type === 'DIG') {
       if (cell.revealed) throw new Error('Ô này đã mở. Hãy chọn một ô chưa mở.');
       if (cell.flagOwner) throw new Error('Ô đang có cờ. Hãy gỡ cờ trước khi đào.');
