@@ -234,6 +234,73 @@ test('Phase 0.9C: MOVE changes position without ending the turn, then FLAG ends 
   assert.notEqual(state.currentId, activeId);
 });
 
+test('CHORD opens all eligible neighbours as one authoritative action and advances exactly one turn', () => {
+  const Engine = require('../engine.js');
+  const manager = new RoomManager({ rng: () => 0.23 });
+  const room = twoPlayerRoom(manager, { boardSize: 10, difficulty: 'easy' });
+  manager.startMatch('c1'); manager.activateRoulette('c1'); manager.beginMatch('c1', room.matchId);
+  const state = room.matchState;
+  const activeId = state.currentId;
+  const otherId = state.turnOrder.find(id => id !== activeId);
+  const activeConnection = room.players.find(p => p.id === activeId).connectionId;
+  const anchor = 44;
+  state.players.find(p => p.id === activeId).pos = anchor;
+  Object.assign(state.cells[anchor], { mine: false, revealed: true, zone: false, adj: 2, flagOwner: null });
+  const adjacent = Engine.neighbors(anchor, state.boardSize);
+  for (const index of adjacent) Object.assign(state.cells[index], {
+    mine: false, revealed: false, zone: false, adj: 1, flagOwner: null, exploded: false
+  });
+  state.cells[adjacent[0]].flagOwner = activeId;
+  state.cells[adjacent[1]].flagOwner = otherId;
+  const expectedTargets = adjacent.slice(2);
+  const turnBefore = state.turnId;
+  const result = manager.applyCommand(activeConnection, {
+    protocolVersion: 1, type: 'CHORD', playerId: activeId, matchId: state.matchId,
+    turnId: state.turnId, commandId: 'chord-safe-1', payload: { index: anchor }
+  });
+  assert.equal(result.action, 'chord');
+  assert.equal(state.turnId, turnBefore + 1);
+  assert.equal(state.currentId, otherId);
+  assert.ok(expectedTargets.every(index => state.cells[index].revealed));
+  assert.equal(state.cells[adjacent[0]].revealed, false);
+  assert.equal(state.cells[adjacent[1]].revealed, false);
+  assert.equal(state.lastAction.type, 'chord');
+  assert.deepEqual(new Set(state.lastAction.openedIndices), new Set(expectedTargets));
+});
+
+test('CHORD with an incorrect flag exposes the remaining adjacent mine and eliminates the player', () => {
+  const Engine = require('../engine.js');
+  const manager = new RoomManager({ rng: () => 0.23 });
+  const room = twoPlayerRoom(manager, { boardSize: 10, difficulty: 'easy' });
+  manager.startMatch('c1'); manager.activateRoulette('c1'); manager.beginMatch('c1', room.matchId);
+  const state = room.matchState;
+  const activeId = state.currentId;
+  const otherId = state.turnOrder.find(id => id !== activeId);
+  const activeConnection = room.players.find(p => p.id === activeId).connectionId;
+  const anchor = 44;
+  state.players.find(p => p.id === activeId).pos = anchor;
+  Object.assign(state.cells[anchor], { mine: false, revealed: true, zone: false, adj: 1, flagOwner: null });
+  const adjacent = Engine.neighbors(anchor, state.boardSize);
+  for (const index of adjacent) Object.assign(state.cells[index], {
+    mine: false, revealed: false, zone: false, adj: 1, flagOwner: null, exploded: false
+  });
+  state.cells[adjacent[0]].flagOwner = otherId;
+  state.cells[adjacent[1]].mine = true;
+  const turnBefore = state.turnId;
+  const result = manager.applyCommand(activeConnection, {
+    protocolVersion: 1, type: 'CHORD', playerId: activeId, matchId: state.matchId,
+    turnId: state.turnId, commandId: 'chord-mine-1', payload: { index: anchor }
+  });
+  assert.equal(result.action, 'eliminated');
+  assert.equal(state.players.find(p => p.id === activeId).alive, false);
+  assert.equal(state.cells[adjacent[1]].revealed, true);
+  assert.equal(state.cells[adjacent[1]].exploded, true);
+  assert.equal(state.cells[adjacent[1]].explodedBy, activeId);
+  assert.equal(state.turnId, turnBefore);
+  assert.equal(state.ended, true);
+  assert.equal(state.endReason, 'survivor');
+});
+
 test('Standard mode rejects removing an opponent flag without consuming the turn or freezing later actions', () => {
   const manager = new RoomManager({ rng: () => 0.29 });
   const room = twoPlayerRoom(manager, { boardSize: 10, difficulty: 'easy' });
