@@ -106,6 +106,8 @@ test('chord opens all covered unflagged neighbours when flag count exactly match
   cells[anchor].revealed = true;
   cells[anchor].adj = 2;
   const adjacent = Engine.neighbors(anchor, size);
+  cells[adjacent[0]].mine = true;
+  cells[adjacent[1]].mine = true;
   cells[adjacent[0]].flagOwner = 'A';
   cells[adjacent[1]].flagOwner = 'B';
   const expectedTargets = adjacent.slice(2);
