@@ -250,6 +250,8 @@ test('CHORD opens all eligible neighbours as one authoritative action and advanc
   for (const index of adjacent) Object.assign(state.cells[index], {
     mine: false, revealed: false, zone: false, adj: 1, flagOwner: null, exploded: false
   });
+  state.cells[adjacent[0]].mine = true;
+  state.cells[adjacent[1]].mine = true;
   state.cells[adjacent[0]].flagOwner = activeId;
   state.cells[adjacent[1]].flagOwner = otherId;
   const expectedTargets = adjacent.slice(2);
