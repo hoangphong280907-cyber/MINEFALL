@@ -9,11 +9,11 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function buildMinefallEngine() {
   'use strict';
 
-  const ENGINE_VERSION = '0.9A.4';
+  const ENGINE_VERSION = '0.9A.5';
   const GAME_STATE_SCHEMA_VERSION = 1;
   const PROTOCOL_VERSION = 1;
-  const COMMAND_TYPES = Object.freeze(['MOVE', 'DIG', 'FLAG', 'UNFLAG', 'READY', 'START_MATCH', 'REQUEST_STATE']);
-  const ACTION_COMMANDS = new Set(['MOVE', 'DIG', 'FLAG', 'UNFLAG']);
+  const COMMAND_TYPES = Object.freeze(['MOVE', 'DIG', 'CHORD', 'FLAG', 'UNFLAG', 'READY', 'START_MATCH', 'REQUEST_STATE']);
+  const ACTION_COMMANDS = new Set(['MOVE', 'DIG', 'CHORD', 'FLAG', 'UNFLAG']);
 
   function assertBoardSize(size) {
     if (!Number.isInteger(size) || size < 8 || size > 20 || size % 2 !== 0) {
@@ -222,6 +222,65 @@
     }
     const newlyOpened = cells.filter(item => item.revealed && !before.has(item.i)).map(item => item.i);
     return { ok: true, mine: false, openedCount, additionalOpened: Math.max(0, openedCount - 1), newlyOpened };
+  }
+
+  // Chording is available only on a revealed numbered cell when the number of
+  // adjacent flags matches its clue exactly. Flag ownership does not affect the count.
+  function getChordInfo(cells, index, size) {
+    const cell = cells?.[index];
+    if (!cell || !cell.revealed || cell.zone || cell.mine || !Number.isInteger(cell.adj) || cell.adj <= 0) {
+      return { ok: false, flagCount: 0, requiredFlags: 0, targetIndices: [], reason: 'Chỉ có thể mở vùng từ một ô số đã mở.' };
+    }
+    const adjacent = neighbors(index, size);
+    const flagCount = adjacent.reduce((count, next) => count + (cells[next]?.flagOwner ? 1 : 0), 0);
+    const targetIndices = adjacent.filter(next => {
+      const candidate = cells[next];
+      return candidate && !candidate.revealed && !candidate.flagOwner && !candidate.zone;
+    });
+    if (flagCount !== cell.adj) {
+      return {
+        ok: false, flagCount, requiredFlags: cell.adj, targetIndices,
+        reason: `Cần đúng ${cell.adj} cờ xung quanh; hiện có ${flagCount}.`
+      };
+    }
+    if (!targetIndices.length) {
+      return {
+        ok: false, flagCount, requiredFlags: cell.adj, targetIndices,
+        reason: 'Không còn ô chưa mở quanh ô số này.'
+      };
+    }
+    return { ok: true, flagCount, requiredFlags: cell.adj, targetIndices };
+  }
+
+  // Open every covered, unflagged neighbour as one atomic action. A wrong flag
+  // can leave a mine among those targets, which is exposed and triggers elimination.
+  function revealChord(cells, index, size) {
+    const info = getChordInfo(cells, index, size);
+    if (!info.ok) {
+      return {
+        ...info, mine: false, openedCount: 0, additionalOpened: 0,
+        newlyOpened: [], mineIndices: []
+      };
+    }
+    const before = new Set(cells.filter(item => item.revealed).map(item => item.i));
+    const mineIndices = [];
+    for (const targetIndex of info.targetIndices) {
+      const target = cells[targetIndex];
+      if (target.mine) {
+        target.revealed = true;
+        target.exploded = true;
+        mineIndices.push(targetIndex);
+      } else {
+        revealSafeRegion(cells, size, [targetIndex]);
+      }
+    }
+    const newlyOpened = cells.filter(item => item.revealed && !before.has(item.i)).map(item => item.i);
+    return {
+      ok: true, mine: mineIndices.length > 0,
+      openedCount: newlyOpened.length, additionalOpened: newlyOpened.length,
+      newlyOpened, mineIndices, targetIndices: info.targetIndices,
+      flagCount: info.flagCount, requiredFlags: info.requiredFlags
+    };
   }
 
   function toggleFlag(cells, index, ownerId, { allowSteal = false } = {}) {
@@ -477,7 +536,7 @@
   return Object.freeze({
     ENGINE_VERSION, GAME_STATE_SCHEMA_VERSION, PROTOCOL_VERSION, COMMAND_TYPES,
     assertBoardSize, inside, indexOf, rowCol, coordinate, neighbors, shuffle,
-    generateBoard, validateBoard, revealSafeRegion, revealCell, toggleFlag,
+    generateBoard, validateBoard, revealSafeRegion, revealCell, getChordInfo, revealChord, toggleFlag,
     nextAlivePlayerId, applyTimeoutPenalty, eliminatePlayer, allMarkableCellsMarked,
     calculateMatchResult, findPathBFS, createCommand, validateCommand,
     toSerializableGameState, toPublicGameState
