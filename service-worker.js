@@ -1,7 +1,7 @@
 /* MINEFALL PWA service worker. Bump CACHE_NAME when the app shell changes. */
 'use strict';
 
-const CACHE_NAME = 'minefall-pwa-1.0.0-rc.6';
+const CACHE_NAME = 'minefall-pwa-1.0.0-rc.7';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -16,7 +16,12 @@ const APP_SHELL = [
   '/online-client.js',
   '/assets/pwa/icon-192.png',
   '/assets/pwa/icon-512.png',
-  '/assets/pwa/apple-touch-icon.png'
+  '/assets/pwa/apple-touch-icon.png',
+  '/assets/skins/skin-classic.png',
+  '/assets/skins/skin-gold.png',
+  '/assets/skins/skin-violet.png',
+  '/assets/skins/skin-crimson.png',
+  '/assets/skins/skin-mint.png'
 ];
 
 self.addEventListener('install', event => {
@@ -71,8 +76,12 @@ self.addEventListener('fetch', event => {
     const cached = await cache.match(request, { ignoreSearch: true });
     try {
       const response = await fetch(request);
-      if (response && response.ok && response.type === 'basic') await cache.put(request, response.clone());
-      return response;
+      if (response && response.ok && response.type === 'basic') {
+        await cache.put(request, response.clone());
+        return response;
+      }
+      // Keep a previously cached image/script if the origin temporarily returns 4xx/5xx.
+      return cached || response || Response.error();
     } catch {
       return cached || Response.error();
     }

@@ -49,8 +49,12 @@ test('main page declares install metadata and exposes a working install entry po
 });
 
 test('service worker caches the app shell, supports offline navigation and leaves server health/WebSocket uncached', () => {
-  assert.match(serviceWorker, /const CACHE_NAME = 'minefall-pwa-1\.0\.0-rc\.6'/);
+  assert.match(serviceWorker, /const CACHE_NAME = 'minefall-pwa-1\.0\.0-rc\.7'/);
   assert.match(serviceWorker, /cache\.addAll\(APP_SHELL\)/);
+  for (const skinId of ['skin-classic', 'skin-gold', 'skin-violet', 'skin-crimson', 'skin-mint']) {
+    assert.ok(serviceWorker.includes(`'/assets/skins/${skinId}.png'`), `${skinId} is pre-cached in the app shell`);
+  }
+  assert.match(serviceWorker, /return cached \|\| response \|\| Response\.error\(\)/);
   assert.match(serviceWorker, /request\.mode === 'navigate'/);
   assert.match(serviceWorker, /caches\.match\('\/index\.html'\)/);
   assert.match(serviceWorker, /url\.pathname === '\/health' \|\| url\.pathname === '\/ws'/);
