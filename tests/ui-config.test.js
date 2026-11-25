@@ -87,6 +87,16 @@ test('current tile clue is displayed without exposing hidden mine counts and mob
 });
 
 
+test('Chord is exposed as a contextual desktop/mobile action and sent through the shared engine', () => {
+  assert.match(html, /id="chordBtn" class="action-btn chord hidden"/);
+  assert.match(html, /id="mobileChordBtn" class="mobile-bubble-action chord hidden"/);
+  assert.match(html, /function renderMobileActionBubbles\(\)[\s\S]*?Engine\.getChordInfo\([\s\S]*?mobileChordBtn/);
+  assert.match(html, /function performAction\(type\)[\s\S]*?type==='chord'[\s\S]*?Engine\.revealChord/);
+  assert.match(html, /sendCommand\(commandType,i\)/);
+  assert.match(html, /MỞ VÙNG sẽ mở các ô còn lại và kết thúc lượt/);
+  assert.match(html, /Cờ sai có thể khiến bạn mở trúng mìn và bị loại/);
+});
+
 test('rapid online state updates are coalesced and the flood ceiling allows normal fast touch input', () => {
   assert.match(server, /const pendingMatchBroadcasts = new Map\(\)/);
   assert.match(server, /if \(pendingMatchBroadcasts\.has\(room\)\) return/);

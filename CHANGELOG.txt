@@ -1,3 +1,10 @@
+[1.0.0-rc.6 — Chord action]
+- Added a contextual MỞ VÙNG (Chord) action for revealed numbered cells when adjacent flag count exactly matches the clue.
+- A chord opens every covered, unflagged adjacent cell in one action and consumes one turn; flags count regardless of owner.
+- Incorrect flags remain a deliberate risk: any unflagged adjacent mine is exposed and eliminates the player. PvP validation is authoritative on the server.
+- Added desktop/mobile controls, tutorial guidance and regression tests for safe chords, incorrect flags and single-turn processing.
+- Bumped the PWA cache namespace so installed clients refresh the RC6 app shell.
+
 [1.0.0-rc.5 — mobile performance hardening]
 - Detect touch-capable devices using maxTouchPoints, coarse-pointer media query and compact viewport width; bypass the live Canvas board renderer on touch hardware.
 - Replace per-candidate bot pathfinding BFS with the exact Chebyshev distance for eight-direction movement on an unobstructed board; this avoids repeatedly traversing the same board during hard-AI candidate scoring.

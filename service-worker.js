@@ -1,7 +1,7 @@
 /* MINEFALL PWA service worker. Bump CACHE_NAME when the app shell changes. */
 'use strict';
 
-const CACHE_NAME = 'minefall-pwa-1.0.0-rc.5';
+const CACHE_NAME = 'minefall-pwa-1.0.0-rc.6';
 const APP_SHELL = [
   '/',
   '/index.html',
