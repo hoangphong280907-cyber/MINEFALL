@@ -1,4 +1,4 @@
-# MINEFALL 1.0.0-rc.5 — Installable PWA Multiplayer Release Candidate
+# MINEFALL 1.0.0-rc.6 — Installable PWA Multiplayer Release Candidate
 
 MINEFALL là game dò mìn PvP dạng **Progressive Web App (PWA)**, có chế độ offline và phòng online 2–5 người. Người chơi có thể cài game lên màn hình chính/desktop từ trình duyệt hỗ trợ; ứng dụng lưu bộ giao diện để mở lại khi mất mạng.
 
@@ -57,6 +57,7 @@ Repository đã theo dõi `package-lock.json` để cố định dependency. Tr�
 - Phòng riêng online hỗ trợ 2–5 người; kích thước bản đồ từ 8×8 đến 20×20.
 - Độ khó hiển thị Dễ / Trung bình / Khó; mật độ mìn tương ứng 25% / 35% / 50%.
 - Di chuyển không kết thúc lượt. Đào, cắm cờ hoặc gỡ cờ của mình kết thúc lượt.
+- **Mở vùng (Chord):** chọn ô số đã mở khi số cờ xung quanh khớp đúng con số trên ô, sau đó dùng MỞ VÙNG để mở tất cả ô chưa mở và chưa cắm cờ lân cận. Đây là một hành động và kết thúc một lượt; cờ sai có thể khiến người chơi mở trúng mìn và bị loại.
 - Mỗi cờ còn trên bàn được tính khi kết thúc trận: cờ đúng +10 điểm, cờ sai −10 điểm; cờ của người bị loại vẫn tính cho đúng chủ sở hữu.
 - Lượt có thời hạn 60 giây; bỏ lượt bị phạt −5 điểm.
 - Thời lượng trận chọn được: 10, 15, 20, 25 hoặc 30 phút. Server là nguồn chuẩn cho đồng hồ và luật online.
