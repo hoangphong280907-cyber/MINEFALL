@@ -79,7 +79,8 @@ class SimulatedClient {
   }
 
   waitFor(type, predicate = () => true, timeoutMs = WAIT_MS) {
-    const matches = message => message && message.type === type && predicate(message);
+    const types = Array.isArray(type) ? type : [type];
+    const matches = message => message && types.includes(message.type) && predicate(message);
     const queuedIndex = this.messages.findIndex(matches);
     if (queuedIndex >= 0) return Promise.resolve(this.messages.splice(queuedIndex, 1)[0]);
     if (this.socket.readyState === WebSocket.CLOSED) {
@@ -94,7 +95,7 @@ class SimulatedClient {
         timer: setTimeout(() => {
           const index = this.waiters.indexOf(waiter);
           if (index >= 0) this.waiters.splice(index, 1);
-          reject(this.closeError || new Error(this.label + ' timed out waiting for ' + type));
+          reject(this.closeError || new Error(this.label + ' timed out waiting for ' + types.join(' or ')));
         }, timeoutMs)
       };
       this.waiters.push(waiter);
@@ -335,13 +336,18 @@ async function runScenario(port, playerCount, boardSize, scenarioNumber) {
     const nonActiveId = sessions.find(session => session.playerId !== firstPlayerId).playerId;
     const nonActiveClient = clientByPlayerId.get(nonActiveId);
     const unauthorizedCommand = makeCommand('FLAG', nonActiveId, state, stolenTurnIndex);
-    const unauthorizedError = nonActiveClient.waitFor('server:error');
+    const unauthorizedResponsePromise = nonActiveClient.waitFor(['server:error', 'command:ack']);
     nonActiveClient.sendCommand(unauthorizedCommand);
-    const rejected = await unauthorizedError;
+    const unauthorizedResponse = await unauthorizedResponsePromise;
     assert.equal(
-      rejected.error?.code,
+      unauthorizedResponse.type,
+      'server:error',
+      scenario + ': server accepted an out-of-turn command: ' + JSON.stringify(unauthorizedResponse)
+    );
+    assert.equal(
+      unauthorizedResponse.error?.code,
       'NOT_ACTIVE_PLAYER',
-      scenario + ': expected NOT_ACTIVE_PLAYER rejection, received ' + JSON.stringify(rejected.error || rejected)
+      scenario + ': expected NOT_ACTIVE_PLAYER rejection, received ' + JSON.stringify(unauthorizedResponse.error || unauthorizedResponse)
     );
 
     let target = chooseCoveredCell(state);
