@@ -374,13 +374,19 @@ async function runScenario(port, playerCount, boardSize, scenarioNumber) {
     );
     assert.equal(state.turn.turnId, turnId + 1, scenario + ': FLAG must end exactly one turn');
 
-    const duplicateErrorPromise = firstClient.waitFor(
-      'server:error',
-      message => message.error?.code === 'DUPLICATE_COMMAND'
-    );
+    const duplicateResponsePromise = firstClient.waitFor(['server:error', 'command:ack']);
     firstClient.sendCommand(flagCommand);
-    const duplicateError = await duplicateErrorPromise;
-    assert.equal(duplicateError.error.code, 'DUPLICATE_COMMAND', scenario + ': duplicate command was not rejected');
+    const duplicateResponse = await duplicateResponsePromise;
+    assert.equal(
+      duplicateResponse.type,
+      'server:error',
+      scenario + ': server accepted a duplicate command: ' + JSON.stringify(duplicateResponse)
+    );
+    assert.equal(
+      duplicateResponse.error?.code,
+      'DUPLICATE_COMMAND',
+      scenario + ': expected DUPLICATE_COMMAND rejection, received ' + JSON.stringify(duplicateResponse.error || duplicateResponse)
+    );
 
     // Each remaining test agent takes one complete MOVE + FLAG turn.
     for (let turn = 0; turn < playerCount - 1; turn++) {
