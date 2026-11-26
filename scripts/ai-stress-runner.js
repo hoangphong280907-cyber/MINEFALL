@@ -317,7 +317,7 @@ async function createRoomGroup(wsUrl, batch, roomIndex, boardSize, allClients, t
   );
   const beginAck = host.waitFor('match:begin:ack', message => message.accepted === true);
   host.send('match:begin', { matchId });
-  const [begunSnapshots] = await Promise.all([Promise.all(begunWaiters), beginAck]);
+  const [begunSnapshots] = await Promise.all([begunWaiters, beginAck]);
   assertSnapshotsEqual(begunSnapshots, label + ' begun state');
 
   const group = {
