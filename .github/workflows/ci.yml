@@ -39,6 +39,7 @@ jobs:
           node --check scripts/check-inline-js.js
           node --check scripts/audit-static-assets.js
           node --check scripts/smoke-server.js
+          node --check scripts/ai-multiplayer-test.js
 
       - name: Check inline browser scripts
         run: node scripts/check-inline-js.js
@@ -48,6 +49,9 @@ jobs:
 
       - name: Run automated tests
         run: npm test
+
+      - name: Run AI multiplayer integration matrix
+        run: npm run test:multiplayer
 
       - name: Smoke-test HTTP and WebSocket server
         run: npm run smoke
