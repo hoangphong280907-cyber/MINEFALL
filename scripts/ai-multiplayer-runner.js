@@ -80,7 +80,7 @@ class SimulatedClient {
     const queuedIndex = this.messages.findIndex(matches);
     if (queuedIndex >= 0) return Promise.resolve(this.messages.splice(queuedIndex, 1)[0]);
 
-    return new Promise((resolve, reject) => {
+    const pending = new Promise((resolve, reject) => {
       const waiter = {
         matches,
         resolve,
@@ -93,6 +93,11 @@ class SimulatedClient {
       };
       this.waiters.push(waiter);
     });
+    // A sibling waiter in Promise.all may already have failed when this socket closes.
+    // Keep the original rejection observable to awaiters without creating a second
+    // unhandled-rejection crash during scenario cleanup.
+    pending.catch(() => {});
+    return pending;
   }
 
   send(type, payload = {}) {
