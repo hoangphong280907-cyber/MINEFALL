@@ -375,7 +375,10 @@ async function runScenario(port, playerCount, boardSize, scenarioNumber) {
     assert.equal(state.turn.turnId, turnId + 1, scenario + ': FLAG must end exactly one turn');
 
     const duplicateResponsePromise = firstClient.waitFor(['server:error', 'command:ack']);
-    firstClient.sendCommand(flagCommand);
+    // Keep the original command ID but use the current turn ID so the validator
+    // reaches duplicate detection instead of rejecting the stale turn first.
+    const duplicateCommand = { ...flagCommand, turnId: state.turn.turnId };
+    firstClient.sendCommand(duplicateCommand);
     const duplicateResponse = await duplicateResponsePromise;
     assert.equal(
       duplicateResponse.type,
