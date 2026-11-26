@@ -38,6 +38,7 @@ class SimulatedClient {
     this.label = label;
     this.messages = [];
     this.waiters = [];
+    this.closeError = null;
 
     socket.on('message', raw => {
       let message;
@@ -50,9 +51,11 @@ class SimulatedClient {
       this.dispatch(message);
     });
 
-    socket.on('error', error => this.rejectWaiters(error));
+    socket.on('error', error => {
+      this.closeError = error;
+    });
     socket.on('close', (code, reason) => {
-      this.rejectWaiters(new Error(this.label + ' socket closed (' + code + '): ' + reason.toString()));
+      this.closeError = new Error(this.label + ' socket closed (' + code + '): ' + reason.toString());
     });
   }
 
@@ -79,6 +82,9 @@ class SimulatedClient {
     const matches = message => message && message.type === type && predicate(message);
     const queuedIndex = this.messages.findIndex(matches);
     if (queuedIndex >= 0) return Promise.resolve(this.messages.splice(queuedIndex, 1)[0]);
+    if (this.socket.readyState === WebSocket.CLOSED) {
+      return Promise.reject(this.closeError || new Error(this.label + ' socket is already closed'));
+    }
 
     const pending = new Promise((resolve, reject) => {
       const waiter = {
@@ -88,7 +94,7 @@ class SimulatedClient {
         timer: setTimeout(() => {
           const index = this.waiters.indexOf(waiter);
           if (index >= 0) this.waiters.splice(index, 1);
-          reject(new Error(this.label + ' timed out waiting for ' + type));
+          reject(this.closeError || new Error(this.label + ' timed out waiting for ' + type));
         }, timeoutMs)
       };
       this.waiters.push(waiter);
