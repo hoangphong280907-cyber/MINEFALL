@@ -114,10 +114,12 @@ class SimulatedClient {
 async function connectClient(url, label) {
   return new Promise((resolve, reject) => {
     const socket = new WebSocket(url);
+    // Attach message handling before the handshake completes; the server sends hello immediately.
+    const client = new SimulatedClient(socket, label);
     let opened = false;
     socket.once('open', () => {
       opened = true;
-      resolve(new SimulatedClient(socket, label));
+      resolve(client);
     });
     socket.once('error', error => {
       if (!opened) reject(error);
@@ -307,10 +309,9 @@ async function runScenario(port, playerCount, boardSize, scenarioNumber) {
 
     const beginClient = clients[0];
     const beginAckPromise = beginClient.waitFor('match:begin:ack', message => message.accepted === true);
-    const begunStates = expectStateForAll(clients, matchId, state => state.started === true);
+    const begunStatesPromise = expectStateForAll(clients, matchId, snapshot => snapshot.started === true);
     beginClient.send('match:begin', { matchId });
-    await Promise.all([beginAckPromise, begunStates]);
-    let stateMessages = await Promise.all(begunStates);
+    const [, stateMessages] = await Promise.all([beginAckPromise, begunStatesPromise]);
     let state = stateMessages[0].state;
     assertSameSnapshot(stateMessages, scenario + ' begun snapshot');
     assert.equal(state.started, true, scenario + ': match did not begin');
@@ -415,7 +416,7 @@ async function runScenario(port, playerCount, boardSize, scenarioNumber) {
       players: playerCount,
       boardSize,
       matchId,
-      commandsVerified: 2 + playerCount * 3,
+      commandsVerified: playerCount * 2 + 1,
       snapshotClients: playerCount
     };
   } finally {
