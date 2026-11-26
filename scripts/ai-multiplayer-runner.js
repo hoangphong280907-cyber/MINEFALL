@@ -335,13 +335,14 @@ async function runScenario(port, playerCount, boardSize, scenarioNumber) {
     const nonActiveId = sessions.find(session => session.playerId !== firstPlayerId).playerId;
     const nonActiveClient = clientByPlayerId.get(nonActiveId);
     const unauthorizedCommand = makeCommand('FLAG', nonActiveId, state, stolenTurnIndex);
-    const unauthorizedError = nonActiveClient.waitFor(
-      'server:error',
-      message => message.error?.code === 'NOT_ACTIVE_PLAYER'
-    );
+    const unauthorizedError = nonActiveClient.waitFor('server:error');
     nonActiveClient.sendCommand(unauthorizedCommand);
     const rejected = await unauthorizedError;
-    assert.equal(rejected.error.code, 'NOT_ACTIVE_PLAYER', scenario + ': server accepted an out-of-turn command');
+    assert.equal(
+      rejected.error?.code,
+      'NOT_ACTIVE_PLAYER',
+      scenario + ': expected NOT_ACTIVE_PLAYER rejection, received ' + JSON.stringify(rejected.error || rejected)
+    );
 
     let target = chooseCoveredCell(state);
     let turnId = state.turn.turnId;
