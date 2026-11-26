@@ -12,6 +12,7 @@ Yêu cầu Node.js 20+ (khuyến nghị Node.js 22) và npm. Mở PowerShell tro
 npm install
 npm test
 npm run test:multiplayer
+npm run test:stress
 npm run smoke
 npm start
 ```
@@ -45,6 +46,7 @@ Blueprint mặc định dùng gói thử nghiệm miễn phí. Dịch vụ có t
 
 - `npm test`: kiểm thử tự động engine, luật tính điểm, protocol, phòng online, UI wiring và cosmetics.
 - `npm run test:multiplayer`: chạy 28 kịch bản client giả lập qua WebSocket, kiểm tra đồng bộ snapshot, ẩn mìn, quyền lượt, MOVE/FLAG/UNFLAG và từ chối lệnh trùng/ngoài lượt.
+- `npm run test:stress`: chạy tải đồng thời nhiều phòng/client, cursor burst, game command, reconnect lặp và đo heap/RSS. Chỉ bật endpoint telemetry cục bộ khi `NODE_ENV=test` và `MINEFALL_TEST_METRICS=1`.
 - `npm run smoke`: khởi động server trên một cổng tạm, kiểm tra `/health`, HTML/JS/CSS, SVG, cả năm sprite PNG và WebSocket hello.
 - `node scripts/check-inline-js.js`: kiểm tra cú pháp các khối JavaScript nhúng trong `index.html`.
 - `node scripts/audit-static-assets.js`: xác minh asset SVG trong catalogue có file tương ứng và ID skin đúng định dạng.
