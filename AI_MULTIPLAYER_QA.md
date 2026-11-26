@@ -40,3 +40,26 @@ The GitHub Actions workflow runs this matrix after the normal unit tests and bef
 These scripted agents are protocol and server-behavior test clients. They are not a substitute for real people using separate browsers, real mobile devices, visual inspection, or long-duration performance testing. The runner starts a fresh local server; it does not test Render, public DNS, production TLS/WSS, PWA installation, or browser rendering. Those checks remain part of the v1.0 release gates.
 
 The test runner uses safe, non-destructive game actions and terminates its local server after the matrix completes.
+
+
+## Stress and memory lifecycle test
+
+Run the bounded stress suite:
+
+```bash
+npm run test:stress
+```
+
+Default profile: 6 simultaneous rooms × 5 WebSocket clients, 3 batches, 3 reconnect cycles per room per batch, 5 game turns per room, and 12 cursor updates per player. Across the full run this creates 18 room lifecycles, 54 reconnect cycles, 180 game commands, and 1,080 cursor messages sent by clients.
+
+Tune the load with environment variables:
+
+- `MINEFALL_STRESS_ROOMS`: 2–12 (default 6)
+- `MINEFALL_STRESS_BATCHES`: 1–4 (default 3)
+- `MINEFALL_STRESS_RECONNECT_CYCLES`: 1–5 (default 3)
+- `MINEFALL_STRESS_TURNS`: 1–10 (default 5)
+- `MINEFALL_STRESS_CURSOR_BURST`: 1–40 (default 12)
+
+The runner launches a local test server with `--expose-gc`. A local-only `/__test/metrics` endpoint is enabled only when both `NODE_ENV=test` and `MINEFALL_TEST_METRICS=1`; it reports process heap/RSS, room count and live WebSocket count, and optionally triggers garbage collection. This endpoint is not available in a normal production environment.
+
+The runner measures command acknowledgement and reconnect latency, peak RSS/heap, and post-GC retained heap. It also verifies that every batch releases all test rooms and sockets and that retained heap stays within a 24 MiB allowance after forced GC. The test is a bounded CI regression/load check, not a capacity certification or a substitute for profiling under real production traffic.
