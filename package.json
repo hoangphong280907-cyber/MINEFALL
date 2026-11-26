@@ -8,7 +8,7 @@
     "start": "node server/index.js",
     "test": "node --test",
     "smoke": "node scripts/smoke-server.js",
-    "test:multiplayer": "node scripts/ai-multiplayer-test.js"
+    "test:multiplayer": "node scripts/ai-multiplayer-runner.js"
   },
   "engines": {
     "node": ">=20"
