@@ -228,7 +228,7 @@ async function executeCommand(clients, activeClient, command, statePredicate, ex
   );
   const statePromises = expectStateForAll(clients, command.matchId, statePredicate);
   activeClient.sendCommand(command);
-  const [ack, snapshots] = await Promise.all([ackPromise, Promise.all(statePromises)]);
+  const [ack, snapshots] = await Promise.all([ackPromise, statePromises]);
   if (expectedAction) assert.equal(ack.action, expectedAction);
   assertSameSnapshot(snapshots, command.type + ' broadcast');
   assertHiddenMinesAreRedacted(snapshots[0].state, command.type + ' broadcast');
