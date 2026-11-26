@@ -95,6 +95,12 @@ async function main() {
       ['/arena-visuals.js', 'javascript'],
       ['/arena-visuals.css', 'text/css'],
       ['/online.css', 'text/css'],
+      ['/manifest.webmanifest', 'application/manifest\+json'],
+      ['/service-worker.js', 'javascript'],
+      ['/pwa.js', 'javascript'],
+      ['/assets/pwa/icon-192.png', 'image/png'],
+      ['/assets/pwa/icon-512.png', 'image/png'],
+      ['/assets/pwa/apple-touch-icon.png', 'image/png'],
       ['/assets/mines/bomb-standard.svg', 'image/svg+xml'],
       ['/assets/flags/flag-vietnam.svg', 'image/svg+xml']
     ];
@@ -103,10 +109,16 @@ async function main() {
       assert.equal(response.status, 200, `${route} should return HTTP 200`);
       assert.match(response.headers.get('content-type') || '', new RegExp(expectedType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
       assert.ok((await response.arrayBuffer()).byteLength > 0, `${route} should not be empty`);
+      if (route === '/service-worker.js') assert.equal(response.headers.get('service-worker-allowed'), '/');
     }
 
+    const manifestResponse = await fetch(`${baseUrl}/manifest.webmanifest`);
+    const manifest = await manifestResponse.json();
+    assert.equal(manifest.name, 'MINEFALL — Think. Move. Survive.');
+    assert.equal(manifest.display, 'standalone');
+
     await checkWebSocket(`ws://127.0.0.1:${port}/ws`);
-    console.log('PASS: server health, app assets and WebSocket hello handshake.');
+    console.log('PASS: server health, app assets, PWA manifest/icons and WebSocket hello handshake.');
   } finally {
     if (child.exitCode === null) {
       child.kill('SIGTERM');
