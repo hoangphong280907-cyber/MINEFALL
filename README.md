@@ -1,4 +1,4 @@
-# MINEFALL 1.0.0-rc.6 — Installable PWA Multiplayer Release Candidate
+# MINEFALL 1.0.0-rc.7 — Installable PWA Multiplayer Release Candidate
 
 MINEFALL là game dò mìn PvP dạng **Progressive Web App (PWA)**, có chế độ offline và phòng online 2–5 người. Người chơi có thể cài game lên màn hình chính/desktop từ trình duyệt hỗ trợ; ứng dụng lưu bộ giao diện để mở lại khi mất mạng.
 
@@ -11,11 +11,12 @@ Yêu cầu Node.js 20+ (khuyến nghị Node.js 22) và npm. Mở PowerShell tro
 ```powershell
 npm install
 npm test
+npm run test:multiplayer
 npm run smoke
 npm start
 ```
 
-Mở `http://localhost:3000`. Trên localhost, service worker có thể hoạt động để thử PWA. Trang `/health` trả về trạng thái server và số phiên bản. Lệnh `npm run smoke` kiểm tra HTTP, các asset chính và bắt tay WebSocket.
+Mở `http://localhost:3000`. Trên localhost, service worker có thể hoạt động để thử PWA. Trang `/health` trả về trạng thái server và số phiên bản. Lệnh `npm run test:multiplayer` khởi động server cục bộ và chạy ma trận 28 kịch bản WebSocket với 2–5 client cùng 7 kích thước bàn cờ. Lệnh `npm run smoke` kiểm tra HTTP, các asset chính và bắt tay WebSocket.
 
 Trên Windows, `start-minefall.bat` cũng có thể cài dependency còn thiếu và chạy server. Khi chơi qua Internet, không cần mở cửa sổ Cloudflare Tunnel nếu đã triển khai public theo hướng dẫn bên dưới.
 
@@ -43,7 +44,8 @@ Blueprint mặc định dùng gói thử nghiệm miễn phí. Dịch vụ có t
 ## Kiểm thử và kiểm soát chất lượng
 
 - `npm test`: kiểm thử tự động engine, luật tính điểm, protocol, phòng online, UI wiring và cosmetics.
-- `npm run smoke`: khởi động server trên một cổng tạm, kiểm tra `/health`, HTML/JS/CSS, SVG và WebSocket hello.
+- `npm run test:multiplayer`: chạy 28 kịch bản client giả lập qua WebSocket, kiểm tra đồng bộ snapshot, ẩn mìn, quyền lượt, MOVE/FLAG/UNFLAG và từ chối lệnh trùng/ngoài lượt.
+- `npm run smoke`: khởi động server trên một cổng tạm, kiểm tra `/health`, HTML/JS/CSS, SVG, cả năm sprite PNG và WebSocket hello.
 - `node scripts/check-inline-js.js`: kiểm tra cú pháp các khối JavaScript nhúng trong `index.html`.
 - `node scripts/audit-static-assets.js`: xác minh asset SVG trong catalogue có file tương ứng và ID skin đúng định dạng.
 - `.github/workflows/ci.yml`: tự động chạy các kiểm tra trên GitHub Actions khi push hoặc tạo pull request.
