@@ -452,13 +452,13 @@ async function runScenario({ clientsCount, boardSize, difficulty, wsUrl, scenari
 
       const dig = makeCommand(state, currentId, 'DIG', selected.i, nextCommandId());
       const currentTurn = state.turn.turnId;
-      const nextStateWaiters = clients.map(client => client.waitFor('match:state', message =>
-        message.state?.matchId === state.matchId &&
-        (message.state?.ended || message.state?.turn?.turnId > currentTurn)
-      ));
+      const nextStatePromise = waitForAllStates(clients, snapshot =>
+        snapshot?.matchId === state.matchId &&
+        (snapshot.ended || snapshot.turn?.turnId > currentTurn),
+      'game turn');
       await sendSuccessfulCommand(currentClient, dig);
       acceptedActions++;
-      state = (await Promise.all(nextStateWaiters))[0].state;
+      state = await nextStatePromise;
     }
 
     assert.equal(state.ended, true, 'public-information gameplay must reach an authoritative end state');
@@ -473,9 +473,6 @@ async function runScenario({ clientsCount, boardSize, difficulty, wsUrl, scenari
       assert.ok(Number.isInteger(result.place) && result.place >= 1 && result.place <= clientsCount, 'every player must receive a valid placement');
     }
 
-    state = await waitForAllStates(clients, snapshot =>
-      snapshot?.matchId === state.matchId && snapshot.ended === true,
-    'final results');
     return {
       players: clientsCount,
       boardSize,
