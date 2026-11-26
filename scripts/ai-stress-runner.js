@@ -317,7 +317,7 @@ async function createRoomGroup(wsUrl, batch, roomIndex, boardSize, allClients, t
   );
   const beginAck = host.waitFor('match:begin:ack', message => message.accepted === true);
   host.send('match:begin', { matchId });
-  const [begunSnapshots] = await Promise.all([Promise.all(begunWaiters), beginAck]).then(([snapshots]) => [snapshots]);
+  const [begunSnapshots] = await Promise.all([Promise.all(begunWaiters), beginAck]);
   assertSnapshotsEqual(begunSnapshots, label + ' begun state');
 
   const group = {
@@ -376,7 +376,7 @@ async function cursorBurst(group) {
   const finalEvents = [];
   for (let playerIndex = 0; playerIndex < group.playerIds.length; playerIndex++) {
     const playerId = group.playerIds[playerIndex];
-    const lastIndex = (playerIndex * 31 + CURSOR_BURST_PER_PLAYER * 17) % (group.boardSize * group.boardSize);
+    const lastIndex = (playerIndex * 31 + (CURSOR_BURST_PER_PLAYER - 1) * 17) % (group.boardSize * group.boardSize);
     for (const recipient of group.clients) {
       finalEvents.push(recipient.waitFor(
         'game:cursor',
@@ -395,7 +395,7 @@ async function cursorBurst(group) {
   await Promise.all(finalEvents);
 }
 
-async function reconnectOnePlayer(group, playerId, cycle, allClients, reconnectSamples) {
+async function reconnectOnePlayer(group, playerId, cycle, allClients, reconnectSamples, wsUrl) {
   const oldClient = group.clientByPlayerId.get(playerId);
   assert.ok(oldClient, group.label + ': cannot reconnect missing client');
   const oldToken = group.tokens.get(playerId);
@@ -489,7 +489,7 @@ async function runBatch({ wsUrl, baseUrl, batch, allClients, stats }) {
 
   for (let cycle = 0; cycle < RECONNECT_CYCLES; cycle++) {
     await Promise.all(groups.map(group =>
-      reconnectOnePlayer(group, group.playerIds[cycle % PLAYER_COUNT], cycle, allClients, stats.reconnectMs)
+      reconnectOnePlayer(group, group.playerIds[cycle % PLAYER_COUNT], cycle, allClients, stats.reconnectMs, wsUrl)
     ));
     const connected = await getMetrics(baseUrl, false);
     assert.equal(connected.rooms, ROOM_COUNT);
