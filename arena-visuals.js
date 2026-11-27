@@ -63,7 +63,7 @@
 
   const instances = new WeakMap();
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
-  const coarsePointer = () => typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+  const coarsePointer = () => (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) || (typeof navigator !== 'undefined' && Number(navigator.maxTouchPoints || 0) > 0);
   const mix = (a, b, amount) => a + (b - a) * amount;
   const hash = value => {
     let h = 2166136261;

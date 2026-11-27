@@ -1,8 +1,30 @@
+[1.0.0-rc.7 — character sprite delivery and PWA asset resilience]
+- Added all five character skin PNGs to the PWA app shell so installed clients have the sprites cached before gameplay begins.
+- Service Worker now falls back to a cached same-origin asset when the origin returns a non-success HTTP response, not only when fetch throws.
+- Static asset audit validates every catalog skin PNG exists, has a PNG signature and is exactly 512×512.
+- HTTP/WebSocket smoke test now requests and validates all five skin routes and their PNG dimensions.
+- Bumped package, lockfile and PWA cache versions to RC7 so installed clients replace the RC6 cache.
+
+[1.0.0-rc.6 — Chord action]
+- Added a contextual MỞ VÙNG (Chord) action for revealed numbered cells when adjacent flag count exactly matches the clue.
+- A chord opens every covered, unflagged adjacent cell in one action and consumes one turn; flags count regardless of owner.
+- Incorrect flags remain a deliberate risk: any unflagged adjacent mine is exposed and eliminates the player. PvP validation is authoritative on the server.
+- Added desktop/mobile controls, tutorial guidance and regression tests for safe chords, incorrect flags and single-turn processing.
+- Bumped the PWA cache namespace so installed clients refresh the RC6 app shell.
+
+[1.0.0-rc.5 — mobile performance hardening]
+- Detect touch-capable devices using maxTouchPoints, coarse-pointer media query and compact viewport width; bypass the live Canvas board renderer on touch hardware.
+- Replace per-candidate bot pathfinding BFS with the exact Chebyshev distance for eight-direction movement on an unobstructed board; this avoids repeatedly traversing the same board during hard-AI candidate scoring.
+- Tighten exact frontier enumeration on touch devices and remove an avoidable Array.shift() queue cost.
+- Batch end-of-match board reveals on mobile, remove per-tile flip/flying-flag timers and suppress the 64-piece confetti layer on touch devices.
+- Skip per-cell reveal-pop animations when a mobile flood-fill opens a large group of tiles; reduce board shadows, filters and sprite animation on compact/touch layouts.
+- Bump the service-worker cache namespace so installed RC4 clients refresh to the RC5 app shell after deployment.
+
 [1.0.0-rc.4 — installable Progressive Web App]
 - Added a web app manifest, MINEFALL home-screen icons, theme metadata and safe-area-aware layout for mobile standalone display.
 - Added an install button for supported Chromium browsers and guided Add to Home Screen steps for iPhone/iPad Safari.
 - Added a scoped service worker that pre-caches the application shell, saves same-origin game assets for offline reuse, and serves the cached UI when a navigation occurs without a network connection.
-- Kept `/health` and the `/ws` multiplayer transport outside the service-worker cache. PvP still requires Internet and the Node.js server; only the app shell and previously fetched assets are available offline.
+- Kept /health and the /ws multiplayer transport outside the service-worker cache. PvP still requires Internet and the Node.js server; only the app shell and previously fetched assets are available offline.
 - Added PWA manifest/install/service-worker regression tests and expanded the HTTP/WebSocket smoke test to verify PWA routes and icons.
 - Verification in this workspace: 92/92 automated tests passed; inline JavaScript syntax check, static asset audit, JavaScript syntax checks and live HTTP/WebSocket/PWA smoke test passed. Real-device installation and offline behavior still require a browser/device check.
 

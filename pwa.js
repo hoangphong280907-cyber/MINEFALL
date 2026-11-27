@@ -1,4 +1,4 @@
-/* Install prompt and service-worker registration for MINEFALL. */
+/* MINEFALL PWA install prompt and service-worker registration. */
 'use strict';
 (() => {
   const installButton = document.getElementById('installAppBtn');

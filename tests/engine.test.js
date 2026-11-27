@@ -21,7 +21,7 @@ function simpleCells() {
 test('engine has explicit versions and command types', () => {
   assert.match(Engine.ENGINE_VERSION, /^0\.9A/);
   assert.equal(Engine.PROTOCOL_VERSION, 1);
-  assert.deepEqual(Engine.COMMAND_TYPES, ['MOVE', 'DIG', 'FLAG', 'UNFLAG', 'READY', 'START_MATCH', 'REQUEST_STATE']);
+  assert.deepEqual(Engine.COMMAND_TYPES, ['MOVE', 'DIG', 'CHORD', 'FLAG', 'UNFLAG', 'READY', 'START_MATCH', 'REQUEST_STATE']);
 });
 
 test('neighbour counts are 3 at a corner and 8 in the center', () => {
@@ -95,6 +95,70 @@ test('safe numbered dig can reveal adjacent safe cells but never adjacent mines'
   assert.equal(out.mine, false);
   assert.equal(cells[13].revealed, false);
   assert.ok(out.openedCount >= 1);
+});
+
+test('chord opens all covered unflagged neighbours when flag count exactly matches the clue', () => {
+  const size = 5;
+  const cells = Array.from({ length: size * size }, (_, i) => ({
+    i, mine: false, adj: 1, revealed: false, flagOwner: null, exploded: false, zone: false
+  }));
+  const anchor = 12;
+  cells[anchor].revealed = true;
+  cells[anchor].adj = 2;
+  const adjacent = Engine.neighbors(anchor, size);
+  cells[adjacent[0]].mine = true;
+  cells[adjacent[1]].mine = true;
+  cells[adjacent[0]].flagOwner = 'A';
+  cells[adjacent[1]].flagOwner = 'B';
+  const expectedTargets = adjacent.slice(2);
+  const info = Engine.getChordInfo(cells, anchor, size);
+  assert.equal(info.ok, true);
+  assert.equal(info.flagCount, 2);
+  assert.deepEqual(info.targetIndices, expectedTargets);
+
+  const result = Engine.revealChord(cells, anchor, size);
+  assert.equal(result.ok, true);
+  assert.equal(result.mine, false);
+  assert.equal(result.openedCount, expectedTargets.length);
+  assert.deepEqual(new Set(result.newlyOpened), new Set(expectedTargets));
+  assert.ok(expectedTargets.every(index => cells[index].revealed));
+  assert.equal(cells[adjacent[0]].revealed, false);
+  assert.equal(cells[adjacent[1]].revealed, false);
+});
+
+test('chord rejects a mismatched flag count and does not change the board', () => {
+  const size = 5;
+  const cells = Array.from({ length: size * size }, (_, i) => ({
+    i, mine: false, adj: 1, revealed: false, flagOwner: null, exploded: false, zone: false
+  }));
+  cells[12].revealed = true;
+  cells[12].adj = 2;
+  const before = cells.map(cell => ({ ...cell }));
+  const result = Engine.revealChord(cells, 12, size);
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /Cần đúng 2 cờ/);
+  assert.deepEqual(cells, before);
+});
+
+test('chord exposes mines left unflagged by an incorrect flag', () => {
+  const size = 5;
+  const cells = Array.from({ length: size * size }, (_, i) => ({
+    i, mine: false, adj: 1, revealed: false, flagOwner: null, exploded: false, zone: false
+  }));
+  const anchor = 12;
+  cells[anchor].revealed = true;
+  cells[anchor].adj = 1;
+  const adjacent = Engine.neighbors(anchor, size);
+  cells[adjacent[0]].flagOwner = 'A';
+  cells[adjacent[1]].mine = true;
+  const result = Engine.revealChord(cells, anchor, size);
+  assert.equal(result.ok, true);
+  assert.equal(result.mine, true);
+  assert.deepEqual(result.mineIndices, [adjacent[1]]);
+  assert.equal(cells[adjacent[1]].revealed, true);
+  assert.equal(cells[adjacent[1]].exploded, true);
+  assert.equal(cells[adjacent[0]].revealed, false);
+  assert.ok(adjacent.slice(2).every(index => cells[index].revealed));
 });
 
 test('toggleFlag places and removes flags with previous ownership reported', () => {

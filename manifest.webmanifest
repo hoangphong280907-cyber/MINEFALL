@@ -2,22 +2,15 @@
   "id": "/",
   "name": "MINEFALL — Think. Move. Survive.",
   "short_name": "MINEFALL",
-  "description": "Game sinh tồn dò mìn theo lượt, chơi offline hoặc PvP trực tuyến.",
+  "description": "MINEFALL multiplayer minesweeper game.",
   "lang": "vi",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
   "orientation": "any",
   "background_color": "#0a1017",
   "theme_color": "#0a1017",
-  "categories": [
-    "games",
-    "entertainment"
-  ],
+  "categories": ["games", "entertainment"],
   "icons": [
     {
       "src": "/assets/pwa/icon-192.png",

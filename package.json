@@ -1,13 +1,15 @@
 {
   "name": "minefall",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.7",
   "private": true,
   "description": "MINEFALL installable PWA browser game with Node.js WebSocket multiplayer server",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
     "test": "node --test",
-    "smoke": "node scripts/smoke-server.js"
+    "smoke": "node scripts/smoke-server.js",
+    "test:multiplayer": "node scripts/ai-multiplayer-runner.js",
+    "test:stress": "node scripts/ai-stress-runner.js"
   },
   "engines": {
     "node": ">=20"

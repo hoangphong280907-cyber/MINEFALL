@@ -28,6 +28,7 @@ const ALLOWED_EMOTES = new Map([['🤔','Đang suy nghĩ'],['😎','Tự tin'],[
 const PUBLIC_FILES = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
+  ['/favicon.ico', ['favicon.ico', 'image/x-icon']],
   ['/manifest.webmanifest', ['manifest.webmanifest', 'application/manifest+json; charset=utf-8']],
   ['/service-worker.js', ['service-worker.js', 'text/javascript; charset=utf-8']],
   ['/pwa.js', ['pwa.js', 'text/javascript; charset=utf-8']],
@@ -249,6 +250,23 @@ function handleMessage(ws, raw) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+  // Local stress-test telemetry is opt-in and inaccessible in normal production runs.
+  if (url.pathname === '/__test/metrics' &&
+      process.env.NODE_ENV === 'test' &&
+      process.env.MINEFALL_TEST_METRICS === '1' &&
+      req.method === 'GET') {
+    if (url.searchParams.get('gc') === '1' && typeof global.gc === 'function') global.gc();
+    res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+    res.end(JSON.stringify({
+      status: 'ok',
+      rooms: manager.rooms.size,
+      connectedClients: sockets.size,
+      uptimeSeconds: process.uptime(),
+      gcAvailable: typeof global.gc === 'function',
+      memory: process.memoryUsage()
+    }));
+    return;
+  }
   if (url.pathname === '/health') {
     res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
     res.end(JSON.stringify({ status: 'ok', version: PACKAGE_INFO.version, phase: '0.9C.9', rooms: manager.rooms.size, connectedClients: sockets.size }));

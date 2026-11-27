@@ -95,12 +95,18 @@ async function main() {
       ['/arena-visuals.js', 'javascript'],
       ['/arena-visuals.css', 'text/css'],
       ['/online.css', 'text/css'],
-      ['/manifest.webmanifest', 'application/manifest\+json'],
+      ['/favicon.ico', 'image/x-icon'],
+      ['/manifest.webmanifest', 'application/manifest+json'],
       ['/service-worker.js', 'javascript'],
       ['/pwa.js', 'javascript'],
       ['/assets/pwa/icon-192.png', 'image/png'],
       ['/assets/pwa/icon-512.png', 'image/png'],
       ['/assets/pwa/apple-touch-icon.png', 'image/png'],
+      ['/assets/skins/skin-classic.png', 'image/png'],
+      ['/assets/skins/skin-gold.png', 'image/png'],
+      ['/assets/skins/skin-violet.png', 'image/png'],
+      ['/assets/skins/skin-crimson.png', 'image/png'],
+      ['/assets/skins/skin-mint.png', 'image/png'],
       ['/assets/mines/bomb-standard.svg', 'image/svg+xml'],
       ['/assets/flags/flag-vietnam.svg', 'image/svg+xml']
     ];
@@ -108,7 +114,13 @@ async function main() {
       const response = await fetch(`${baseUrl}${route}`, { signal: AbortSignal.timeout(2000) });
       assert.equal(response.status, 200, `${route} should return HTTP 200`);
       assert.match(response.headers.get('content-type') || '', new RegExp(expectedType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
-      assert.ok((await response.arrayBuffer()).byteLength > 0, `${route} should not be empty`);
+      const bytes = Buffer.from(await response.arrayBuffer());
+      assert.ok(bytes.length > 0, `${route} should not be empty`);
+      if (route.startsWith('/assets/skins/')) {
+        assert.equal(bytes.toString('hex', 0, 8), '89504e470d0a1a0a', `${route} is a PNG`);
+        assert.equal(bytes.readUInt32BE(16), 512, `${route} width`);
+        assert.equal(bytes.readUInt32BE(20), 512, `${route} height`);
+      }
       if (route === '/service-worker.js') assert.equal(response.headers.get('service-worker-allowed'), '/');
     }
 
@@ -118,7 +130,7 @@ async function main() {
     assert.equal(manifest.display, 'standalone');
 
     await checkWebSocket(`ws://127.0.0.1:${port}/ws`);
-    console.log('PASS: server health, app assets, PWA manifest/icons and WebSocket hello handshake.');
+    console.log('PASS: server health, app assets, all five 512x512 skin PNG routes, PWA manifest/icons and WebSocket hello handshake.');
   } finally {
     if (child.exitCode === null) {
       child.kill('SIGTERM');
