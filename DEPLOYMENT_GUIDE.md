@@ -41,7 +41,7 @@ Gói miễn phí có thể tự ngủ khi không có lưu lượng và khởi đ
 2. Mở URL Render trên Chrome/Edge ở Android hoặc desktop. Nhấn nút **Cài app** trên thanh đầu trang, hoặc dùng mục Install/Add to Home Screen trong menu trình duyệt.
 3. Trên iPhone/iPad, mở URL bằng Safari, nhấn **Chia sẻ** → **Thêm vào màn hình chính** → **Thêm**.
 4. Sau lần mở đầu tiên có Internet, service worker lưu app shell và các asset đã tải. Có thể mở lại giao diện khi offline; PvP/WebSocket vẫn cần Internet và server.
-5. Sau khi cập nhật giao diện, service worker sẽ thay cache theo phiên bản `CACHE_NAME` trong `service-worker.js`. Khi có thay đổi app shell lớn, tăng hậu tố cache để loại bỏ cache cũ an toàn.
+5. Sau khi cập nhật giao diện, service worker sẽ thay cache theo phiên bản `CACHE_NAME` trong `service-worker.js`. Khi có thay đổi app shell lớn, tăng hậu tố cache (ví dụ `minefall-pwa-v2`) để loại bỏ cache cũ an toàn.
 
 ## F. Mỗi lần cập nhật
 
